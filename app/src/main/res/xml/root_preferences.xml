@@ -120,8 +120,8 @@
             app:defaultValue="false"
             app:icon="@drawable/ic_action_tablet"
             app:title="Enable foldable support"   />
-      
-      <SwitchPreferenceCompat
+
+        <SwitchPreferenceCompat
             app:singleLineTitle="false"
             app:key="pref_transparent_status_bar"
             app:defaultValue="false"
@@ -367,6 +367,12 @@
             app:icon="@drawable/ic_action_filter"
             app:summary="Hide stories based on words in title"
             app:dialogMessage="Separate phrases by commas, capitalization is ignored"  />
+        <EditTextPreference
+            app:icon="@drawable/ic_action_block"
+            app:key="pref_filter_score"
+            app:singleLineTitle="false"
+            app:summary="Hide stories based on a minimum score"
+            app:title="Filter stories on score" />
         <EditTextPreference
             app:singleLineTitle="false"
             app:title="Filter stories by domain"
