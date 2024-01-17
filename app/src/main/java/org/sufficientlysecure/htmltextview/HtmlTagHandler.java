@@ -32,9 +32,14 @@ import android.text.style.TypefaceSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.View;
+
 import androidx.annotation.Nullable;
-import java.util.Stack;
+
+import com.simon.harmonichackernews.linkpreview.NitterGetter;
+
 import org.xml.sax.Attributes;
+
+import java.util.Stack;
 
 /**
  * Some parts of this code are based on android.text.Html
@@ -46,6 +51,7 @@ public class HtmlTagHandler implements WrapperTagHandler {
     public static final String LIST_ITEM = "HTML_TEXTVIEW_ESCAPED_LI_TAG";
     public static final String A_ITEM = "HTML_TEXTVIEW_ESCAPED_A_TAG";
     public static final String PLACEHOLDER_ITEM = "HTML_TEXTVIEW_ESCAPED_PLACEHOLDER";
+    public boolean shouldRedirectTwitter = false;
 
     public HtmlTagHandler() {
     }
@@ -265,7 +271,12 @@ public class HtmlTagHandler implements WrapperTagHandler {
                 final Object a = getLast(output, A.class);
                 final int spanStart = output.getSpanStart(a);
                 final int spanEnd = output.length();
-                final String href = a instanceof A ? ((A) a).href : null;
+                String href = a instanceof A ? ((A) a).href : null;
+                if (shouldRedirectTwitter && href != null && href.contains("twitter")) {
+                    if (NitterGetter.isConvertibleToNitter(href)) {
+                        href = NitterGetter.convertToNitterUrl(href);
+                    }
+                }
                 final String spannedText = output.subSequence(spanStart, spanEnd).toString();
                 end(output, A.class, false, new URLSpan(href) {
                     @Override

@@ -14,6 +14,7 @@
 
 package org.sufficientlysecure.htmltextview;
 
+import android.content.Context;
 import android.text.Html;
 import android.text.Html.ImageGetter;
 import android.text.SpannableStringBuilder;
@@ -22,34 +23,25 @@ import android.text.Spanned;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.simon.harmonichackernews.linkpreview.NitterGetter;
+import com.simon.harmonichackernews.utils.SettingsUtils;
+
 public class HtmlFormatter {
 
     private HtmlFormatter() {
-    }
-
-    public static Spanned formatHtml(@NonNull final HtmlFormatterBuilder builder) {
-        return formatHtml(
-            builder.getHtml(), builder.getImageGetter(), builder.getClickableTableSpan(),
-            builder.getDrawTableLinkSpan(), new TagClickListenerProvider() {
-                @Override public OnClickATagListener provideTagClickListener() {
-                    return builder.getOnClickATagListener();
-                }
-            }, builder.getIndent(),
-            builder.isRemoveTrailingWhiteSpace()
-        );
     }
 
     interface TagClickListenerProvider {
         OnClickATagListener provideTagClickListener();
     }
 
-    public static Spanned formatHtml(@Nullable String html, ImageGetter imageGetter, ClickableTableSpan clickableTableSpan, DrawTableLinkSpan drawTableLinkSpan, TagClickListenerProvider tagClickListenerProvider, float indent, boolean removeTrailingWhiteSpace) {
+    public static Spanned formatHtml(Context context, @Nullable String html, ImageGetter imageGetter, ClickableTableSpan clickableTableSpan, DrawTableLinkSpan drawTableLinkSpan, TagClickListenerProvider tagClickListenerProvider, float indent, boolean removeTrailingWhiteSpace) {
         final HtmlTagHandler htmlTagHandler = new HtmlTagHandler();
         htmlTagHandler.setClickableTableSpan(clickableTableSpan);
         htmlTagHandler.setDrawTableLinkSpan(drawTableLinkSpan);
         htmlTagHandler.setOnClickATagListenerProvider(tagClickListenerProvider);
         htmlTagHandler.setListIndentPx(indent);
-
+        htmlTagHandler.shouldRedirectTwitter = SettingsUtils.shouldRedirectNitter(context.getApplicationContext());
         html = htmlTagHandler.overrideTags(html);
 
         Spanned formattedHtml;
