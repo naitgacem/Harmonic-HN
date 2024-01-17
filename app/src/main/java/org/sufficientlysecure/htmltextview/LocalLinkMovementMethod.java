@@ -21,9 +21,10 @@ import android.text.Selection;
 import android.text.Spannable;
 import android.text.method.LinkMovementMethod;
 import android.text.method.Touch;
-import android.text.style.ClickableSpan;
+import android.text.style.URLSpan;
 import android.view.MotionEvent;
 import android.widget.TextView;
+
 
 /**
  * Copied from http://stackoverflow.com/questions/8558732
@@ -57,7 +58,7 @@ public class LocalLinkMovementMethod extends LinkMovementMethod {
             int line = layout.getLineForVertical(y);
             int off = layout.getOffsetForHorizontal(line, x);
 
-            ClickableSpan[] link = buffer.getSpans(off, off, ClickableSpan.class);
+            URLSpan[] link = buffer.getSpans(off, off, URLSpan.class);
 
             if (link.length != 0) {
                 if (action == MotionEvent.ACTION_UP) {
