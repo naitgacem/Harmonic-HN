@@ -6,8 +6,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 
-import androidx.activity.OnBackPressedCallback;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.gw.swipeback.SwipeBackLayout;
