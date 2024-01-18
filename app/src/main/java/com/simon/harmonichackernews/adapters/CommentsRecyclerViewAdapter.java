@@ -6,11 +6,8 @@ import static android.view.View.VISIBLE;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.text.Html;
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -32,7 +29,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.TooltipCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
@@ -59,7 +55,6 @@ import org.sufficientlysecure.htmltextview.HtmlTextView;
 import org.sufficientlysecure.htmltextview.OnClickATagListener;
 
 import java.util.List;
-import java.util.Objects;
 
 public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -101,6 +96,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
     public final static int FLAG_ACTION_CLICK_USER = 0;
     public final static int FLAG_ACTION_CLICK_COMMENT = 1;
     public final static int FLAG_ACTION_CLICK_VOTE = 2;
+    public final static int FLAG_ACTION_CLICK_PARENT = 6;
     public final static int FLAG_ACTION_CLICK_SHARE = 4;
     public final static int FLAG_ACTION_CLICK_MORE = 5;
     public final static int FLAG_ACTION_CLICK_REFRESH = -2;
@@ -617,6 +613,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
         public final ImageButton userButton;
         public final ImageButton commentButton;
         public final ImageButton voteButton;
+        public final ImageButton goToParentButton;
         public final ImageButton bookmarkButton;
         public final ImageButton shareButton;
         public final ImageButton moreButton;
@@ -692,6 +689,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
             linkInfoContainer = view.findViewById(R.id.comments_header_link_info_container);
             userButton = view.findViewById(R.id.comments_header_button_user);
             commentButton = view.findViewById(R.id.comments_header_button_comment);
+            goToParentButton = view.findViewById(R.id.comments_header_button_goto_parent);
             voteButton = view.findViewById(R.id.comments_header_button_vote);
             bookmarkButton = view.findViewById(R.id.comments_header_button_bookmark);
             shareButton = view.findViewById(R.id.comments_header_button_share);
@@ -764,6 +762,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
             userButton.setOnClickListener((v) -> headerActionClickListener.onActionClicked(FLAG_ACTION_CLICK_USER, null));
             commentButton.setOnClickListener((v) -> headerActionClickListener.onActionClicked(FLAG_ACTION_CLICK_COMMENT, null));
             voteButton.setOnClickListener((v) -> headerActionClickListener.onActionClicked(FLAG_ACTION_CLICK_VOTE, view));
+            goToParentButton.setOnClickListener((v) -> headerActionClickListener.onActionClicked(FLAG_ACTION_CLICK_PARENT, null));
             shareButton.setOnClickListener((v) -> headerActionClickListener.onActionClicked(FLAG_ACTION_CLICK_SHARE, v));
             moreButton.setOnClickListener((v) -> headerActionClickListener.onActionClicked(FLAG_ACTION_CLICK_MORE, v));
             sheetRefreshButton.setOnClickListener((v) -> headerActionClickListener.onActionClicked(FLAG_ACTION_CLICK_REFRESH, view));
@@ -779,6 +778,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
             TooltipCompat.setTooltipText(userButton, "User");
             TooltipCompat.setTooltipText(commentButton, "Comment");
             TooltipCompat.setTooltipText(voteButton, "Vote");
+            TooltipCompat.setTooltipText(goToParentButton, "Go to the parent comment");
             TooltipCompat.setTooltipText(bookmarkButton, "Bookmark");
             TooltipCompat.setTooltipText(shareButton, "Share");
             TooltipCompat.setTooltipText(moreButton, "More");

@@ -50,7 +50,6 @@ import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -64,7 +63,6 @@ import androidx.core.view.OnApplyWindowInsetsListener;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
@@ -94,13 +92,13 @@ import com.simon.harmonichackernews.data.Story;
 import com.simon.harmonichackernews.data.WikipediaInfo;
 import com.simon.harmonichackernews.linkpreview.ArxivAbstractGetter;
 import com.simon.harmonichackernews.linkpreview.GitHubInfoGetter;
+import com.simon.harmonichackernews.linkpreview.NitterGetter;
+import com.simon.harmonichackernews.linkpreview.WikipediaGetter;
+import com.simon.harmonichackernews.network.ArchiveOrgUrlGetter;
 import com.simon.harmonichackernews.network.JSONParser;
 import com.simon.harmonichackernews.network.NetworkComponent;
-import com.simon.harmonichackernews.linkpreview.NitterGetter;
 import com.simon.harmonichackernews.network.UserActions;
-import com.simon.harmonichackernews.linkpreview.WikipediaGetter;
 import com.simon.harmonichackernews.utils.AccountUtils;
-import com.simon.harmonichackernews.network.ArchiveOrgUrlGetter;
 import com.simon.harmonichackernews.utils.CommentSorter;
 import com.simon.harmonichackernews.utils.DialogUtils;
 import com.simon.harmonichackernews.utils.FileDownloader;
@@ -139,6 +137,8 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
     public final static String EXTRA_TEXT = "com.simon.harmonichackernews.EXTRA_TEXT";
     public final static String EXTRA_IS_LINK = "com.simon.harmonichackernews.EXTRA_IS_LINK";
     public final static String EXTRA_IS_COMMENT = "com.simon.harmonichackernews.EXTRA_IS_COMMENT";
+    public final static String EXTRA_PARENT_ID = "com.simon.harmonichackernews.EXTRA_PARENT_ID";
+
     public final static String EXTRA_FORWARD = "com.simon.harmonichackernews.EXTRA_FORWARD";
     public final static String EXTRA_SHOW_WEBSITE = "com.simon.harmonichackernews.EXTRA_SHOW_WEBSITE";
     private final static String PDF_MIME_TYPE = "application/pdf";
@@ -202,6 +202,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
             story.pollOptions = bundle.getIntArray(EXTRA_POLL_OPTIONS);
             story.descendants = bundle.getInt(EXTRA_DESCENDANTS, 0);
             story.id = bundle.getInt(EXTRA_ID, 0);
+            story.parentId = bundle.getInt(EXTRA_PARENT_ID, 0);
             story.score = bundle.getInt(EXTRA_SCORE, 0);
             story.text = bundle.getString(EXTRA_TEXT);
             story.isLink = bundle.getBoolean(EXTRA_IS_LINK, true);
@@ -223,7 +224,6 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
             }
 
             showWebsite = bundle.getBoolean(EXTRA_SHOW_WEBSITE, false);
-
         } else {
             story.loaded = false;
             story.id = -1;
@@ -243,7 +243,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                                     story.url = "";
                                     story.score = 0;
                                 }
-                            } catch(Exception e) {
+                            } catch (Exception e) {
                                 e.printStackTrace();
                                 Toast.makeText(getContext(), "Unable to parse story", Toast.LENGTH_SHORT).show();
                                 requireActivity().finish();
@@ -257,6 +257,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                 } else {
                     if (intent.getIntExtra(EXTRA_ID, -1) != -1) {
                         story.id = intent.getIntExtra(EXTRA_ID, -1);
+                        story.parentId = intent.getIntExtra(EXTRA_PARENT_ID, 0);
                         story.title = intent.getStringExtra(EXTRA_TITLE);
                         story.by = "";
                         story.url = "";
@@ -265,6 +266,8 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                 }
             }
         }
+
+
     }
 
     @Override
@@ -382,7 +385,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                 Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
 
                 FrameLayout.LayoutParams scrollParams = (FrameLayout.LayoutParams) scrollNavigation.getLayoutParams();
-                scrollParams.setMargins(0,0,0, insets.bottom + Utils.pxFromDpInt(getResources(), 16));
+                scrollParams.setMargins(0, 0, 0, insets.bottom + Utils.pxFromDpInt(getResources(), 16));
 
                 return windowInsets;
             }
@@ -399,10 +402,16 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         scrollIcon.setOnClickListener(null);
 
         scrollNext.setOnClickListener((v) -> scrollNext());
-        scrollNext.setOnLongClickListener(v -> {scrollLast(); return true;});
+        scrollNext.setOnLongClickListener(v -> {
+            scrollLast();
+            return true;
+        });
 
         scrollPrev.setOnClickListener((v) -> scrollPrevious());
-        scrollPrev.setOnLongClickListener(v -> {scrollTop(); return true;});
+        scrollPrev.setOnLongClickListener(v -> {
+            scrollTop();
+            return true;
+        });
 
         initializeRecyclerView();
 
@@ -414,8 +423,12 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         //if this isn't here, the addition of the text appears to scroll the recyclerview down a little
         recyclerView.scrollToPosition(0);
 
+
         if (cachedResponse != null) {
-            handleJsonResponse(story.id, cachedResponse,false, false, !showWebsite);
+            handleJsonResponse(story.id, cachedResponse, false, false, !showWebsite);
+        }
+        if (story.parentId == 0) {
+            //hideParentButton();
         }
     }
 
@@ -432,7 +445,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
 
         BottomSheetBehavior.from(bottomSheet).setPeekHeight(standardMargin + navbarHeight);
         CoordinatorLayout.LayoutParams params = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        params.setMargins(0,0, 0, standardMargin + navbarHeight);
+        params.setMargins(0, 0, 0, standardMargin + navbarHeight);
 
         webViewContainer.setLayoutParams(params);
 
@@ -522,7 +535,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
 
             if (lastChildIndex != index || adapter.collapseParent) {
                 // + 1 since if we have 1 subcomment we have changed the parent and the child
-                adapter.notifyItemRangeChanged(index+1, lastChildIndex - index + 1-offset);
+                adapter.notifyItemRangeChanged(index + 1, lastChildIndex - index + 1 - offset);
             }
 
             //next couple of lines makes it so that if we hide parents and click the comment at
@@ -560,7 +573,9 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                     case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_VOTE:
                         clickVote();
                         break;
-
+                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_PARENT:
+                        clickParent();
+                        break;
                     case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_SHARE:
                         clickShare(clickedView);
                         break;
@@ -721,8 +736,8 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         BottomSheetBehavior.from(bottomSheet).addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
-               if (callback != null) {
-                   callback.onSwitchView(newState == BottomSheetBehavior.STATE_COLLAPSED);
+                if (callback != null) {
+                    callback.onSwitchView(newState == BottomSheetBehavior.STATE_COLLAPSED);
                 }
             }
 
@@ -762,7 +777,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         webView.getSettings().setDatabaseEnabled(true);
         webView.getSettings().setUseWideViewPort(true);
         webView.getSettings().setLoadWithOverviewMode(true);
-        
+
         webView.setDownloadListener(new DownloadListener() {
             @Override
             public void onDownloadStart(String url, String userAgent,
@@ -959,7 +974,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                 if (bottomSheet != null) {
                     bottomSheet.setBackgroundColor(ContextCompat.getColor(ctx, ThemeUtils.getBackgroundColorResource(ctx)));
                 }
-                if (webViewContainer != null){
+                if (webViewContainer != null) {
                     webViewContainer.setBackgroundColor(ContextCompat.getColor(ctx, ThemeUtils.getBackgroundColorResource(ctx)));
                 }
             }
@@ -976,7 +991,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
     public void onResume() {
         super.onResume();
 
-        if (lastLoaded != 0 && (System.currentTimeMillis() - lastLoaded) > 1000*60*60 && !Utils.timeInSecondsMoreThanTwoHoursAgo(story.time)) {
+        if (lastLoaded != 0 && (System.currentTimeMillis() - lastLoaded) > 1000 * 60 * 60 && !Utils.timeInSecondsMoreThanTwoHoursAgo(story.time)) {
             if (adapter != null && !adapter.showUpdate) {
                 adapter.showUpdate = true;
                 adapter.notifyItemChanged(0);
@@ -1110,7 +1125,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 response -> {
                     if (TextUtils.isEmpty(oldCachedResponse) || !oldCachedResponse.equals(response)) {
-                        handleJsonResponse(id, response,true, oldCachedResponse == null, false);
+                        handleJsonResponse(id, response, true, oldCachedResponse == null, false);
                     }
                     swipeRefreshLayout.setRefreshing(false);
                 }, error -> {
@@ -1244,7 +1259,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
 
         try {
             JSONObject jsonObject = new JSONObject(response);
-
+            story.parentId = jsonObject.optInt("parent_id");
             JSONArray children = jsonObject.getJSONArray("children");
 
             //we run the defauly sorting
@@ -1454,6 +1469,18 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         UserActions.upvote(getContext(), adapter.story.id, getParentFragmentManager());
     }
 
+    public void clickParent() {
+        if (story.parentId == 0) {
+            Toast.makeText(requireContext(), "This is the top level story.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Story parent = new Story("", story.parentId, false, false);
+        Bundle bundle = parent.toBundle();
+        Intent intent = new Intent(getContext(), CommentsActivity.class);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
+
     private void scrollTop() {
         recyclerView.smoothScrollToPosition(0);
     }
@@ -1576,7 +1603,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         ListAdapter adapter = new ArrayAdapter<Pair<String, Integer>>(ctx,
                 R.layout.comment_dialog_item,
                 R.id.comment_dialog_text,
-                items){
+                items) {
             public View getView(int position, View convertView, ViewGroup parent) {
                 TextView view = (TextView) super.getView(position, convertView, parent);
 
@@ -1832,6 +1859,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
 
         interface Callbacks {
             void onFailure();
+
             void onLoad();
         }
     }
