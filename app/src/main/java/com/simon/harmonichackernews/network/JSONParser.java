@@ -32,7 +32,7 @@ public class JSONParser {
             Story story = new Story();
 
             boolean isComment = hit.getJSONArray("_tags").get(0).equals("comment");
-
+            story.parentId = hit.optInt("parent_id");
             story.title = isComment ? hit.getString("story_title") : hit.optString("title");
             story.score = hit.optInt("points");
             story.by = hit.getString("author");
@@ -101,7 +101,7 @@ public class JSONParser {
                 jsonObject.getInt("time"),
                 jsonObject.getString("title")
         );
-
+        story.parentId = jsonObject.optInt("parent");
         if (jsonObject.has("descendants")) {
             story.descendants = jsonObject.getInt("descendants");
         } else {

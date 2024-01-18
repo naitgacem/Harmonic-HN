@@ -1,7 +1,6 @@
 package com.simon.harmonichackernews.data;
 
 import android.os.Bundle;
-import android.text.TextUtils;
 
 import com.simon.harmonichackernews.CommentsFragment;
 import com.simon.harmonichackernews.utils.Utils;
@@ -31,6 +30,7 @@ public class Story {
     public boolean isJob = false;
     public boolean loadingFailed = false;
     public boolean isComment = false;
+    public int parentId = 0; // 0 for top level stories.
     public String commentMasterTitle;
     public int commentMasterId;
     public String commentMasterUrl;
@@ -76,7 +76,7 @@ public class Story {
         bundle.putString(CommentsFragment.EXTRA_TEXT, text);
         bundle.putBoolean(CommentsFragment.EXTRA_IS_LINK, isLink);
         bundle.putBoolean(CommentsFragment.EXTRA_IS_COMMENT, isComment);
-
+        bundle.putInt(CommentsFragment.EXTRA_PARENT_ID, parentId);
         return bundle;
     }
 
