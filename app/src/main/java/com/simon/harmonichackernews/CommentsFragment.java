@@ -233,21 +233,26 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                 if (Intent.ACTION_VIEW.equalsIgnoreCase(intent.getAction())) {
                     if (intent.getData() != null) {
                         String sId = intent.getData().getQueryParameter("id");
-                        if (sId != null && !sId.equals("") && TextUtils.isDigitsOnly(sId)) {
-                            try {
-                                int id = Integer.parseInt(sId);
-                                if (id > 0) {
-                                    story.id = id;
-                                    story.title = "Loading...";
-                                    story.by = "";
-                                    story.url = "";
-                                    story.score = 0;
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                Toast.makeText(getContext(), "Unable to parse story", Toast.LENGTH_SHORT).show();
-                                requireActivity().finish();
+                        String sFragmentId = intent.getData().getFragment();
+                        try {
+                            int id = Integer.parseInt(sId);
+                            if (id > 0) {
+                                Utils.initStory(story, id);
                             }
+
+                            // Check if there is a fragment that should replace the story id
+                            try{
+                                id = Integer.parseInt(sFragmentId);
+                                if (id > 0) {
+                                    Utils.initStory(story, id);
+                                }
+                            } catch (Exception ignored){
+                                // we tried..
+                            }
+                        } catch (Exception e){
+                            e.printStackTrace();
+                            Toast.makeText(getContext(), "Unable to parse story", Toast.LENGTH_SHORT).show();
+                            requireActivity().finish();
                         }
                     }
                     if (story.id == -1) {
@@ -1573,7 +1578,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         final Context ctx = getContext();
 
         Pair[] items;
-
+        // TODO clean up this mess
         if (Utils.timeInSecondsMoreThanTwoWeeksAgo(comment.time)) {
             items = new Pair[]{
                     new Pair<>("View user (" + comment.by + ")", R.drawable.ic_action_user),
@@ -1583,6 +1588,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                     new Pair<>("Vote up", R.drawable.ic_action_thumbs_up),
                     new Pair<>("Unvote", R.drawable.ic_action_thumbs),
                     new Pair<>("Vote down", R.drawable.ic_action_thumb_down),
+                    new Pair<>("Bookmark", R.drawable.ic_action_bookmark_border),
             };
         } else {
             items = new Pair[]{
@@ -1593,6 +1599,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                     new Pair<>("Vote up", R.drawable.ic_action_thumbs_up),
                     new Pair<>("Unvote", R.drawable.ic_action_thumbs),
                     new Pair<>("Vote down", R.drawable.ic_action_thumb_down),
+                    new Pair<>("Bookmark", R.drawable.ic_action_bookmark_border),
                     new Pair<>("Reply", R.drawable.ic_action_reply)
             };
         }
@@ -1649,8 +1656,10 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                     case 6: //downvote
                         UserActions.downvote(ctx, comment.id, getParentFragmentManager());
                         break;
-
-                    case 7: //reply
+                    case 7:
+                        Utils.addBookmark(ctx, comment.id);
+                        break;
+                    case 8: //reply
                         if (!AccountUtils.hasAccountDetails(ctx)) {
                             AccountUtils.showLoginPrompt(getParentFragmentManager());
                             return;

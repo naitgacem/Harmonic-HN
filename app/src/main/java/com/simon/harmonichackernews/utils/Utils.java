@@ -28,6 +28,7 @@ import com.simon.harmonichackernews.BuildConfig;
 import com.simon.harmonichackernews.CommentsActivity;
 import com.simon.harmonichackernews.R;
 import com.simon.harmonichackernews.data.Bookmark;
+import com.simon.harmonichackernews.data.Story;
 
 import org.json.JSONArray;
 
@@ -610,7 +611,6 @@ public class Utils {
             // Validate the host and path
             if ("news.ycombinator.com".equalsIgnoreCase(uri.getHost()) && "/item".equals(uri.getPath())) {
                 String sId = uri.getQueryParameter("id");
-
                 // Check if id parameter is valid
                 if (sId != null && !sId.isEmpty() && TextUtils.isDigitsOnly(sId)) {
                     int id = Integer.parseInt(sId);
@@ -631,6 +631,14 @@ public class Utils {
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         intent.setClass(context, CommentsActivity.class);
         context.startActivity(intent);
+    }
+
+    public static void initStory(Story story, int id) {
+        story.id = id;
+        story.title = "Loading...";
+        story.by = "";
+        story.url = "";
+        story.score = 0;
     }
 
 }
