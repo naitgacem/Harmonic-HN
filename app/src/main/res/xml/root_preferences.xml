@@ -280,7 +280,7 @@
             app:singleLineTitle="false"
             app:key="pref_always_open_comments"
             app:icon="@drawable/ic_action_skip"
-            app:defaultValue="false"
+            app:defaultValue="true"
             app:summary="Clicking a story takes you directly to the comments view"
             app:title="Always open comments" />
 
