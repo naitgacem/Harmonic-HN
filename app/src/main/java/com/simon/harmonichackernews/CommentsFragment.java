@@ -427,9 +427,6 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         if (cachedResponse != null) {
             handleJsonResponse(story.id, cachedResponse, false, false, !showWebsite);
         }
-        if (story.parentId == 0) {
-            //hideParentButton();
-        }
     }
 
     private void toggleBackPressedCallback(boolean newStatus) {

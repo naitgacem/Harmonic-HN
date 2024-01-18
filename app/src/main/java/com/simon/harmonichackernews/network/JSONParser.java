@@ -6,7 +6,6 @@ import com.simon.harmonichackernews.adapters.CommentsRecyclerViewAdapter;
 import com.simon.harmonichackernews.data.Comment;
 import com.simon.harmonichackernews.data.Story;
 import com.simon.harmonichackernews.utils.StoryUpdate;
-import com.simon.harmonichackernews.utils.Utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;

@@ -289,7 +289,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
                                 .into(headerViewHolder.nitterImage);
                     } catch (Exception e){
                         e.printStackTrace();
-                    };
+                    }
                 }
 
             }
@@ -755,9 +755,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
                 }
             });
 
-            arxivDownloadButton.setOnClickListener((v) -> {
-                Utils.downloadPDF(v.getContext(), story.arxivInfo.getPDFURL());
-            });
+            arxivDownloadButton.setOnClickListener((v) -> Utils.downloadPDF(v.getContext(), story.arxivInfo.getPDFURL()));
 
             userButton.setOnClickListener((v) -> headerActionClickListener.onActionClicked(FLAG_ACTION_CLICK_USER, null));
             commentButton.setOnClickListener((v) -> headerActionClickListener.onActionClicked(FLAG_ACTION_CLICK_COMMENT, null));

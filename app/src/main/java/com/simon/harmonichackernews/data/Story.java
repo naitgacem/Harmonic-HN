@@ -2,6 +2,8 @@ package com.simon.harmonichackernews.data;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+
 import com.simon.harmonichackernews.CommentsFragment;
 import com.simon.harmonichackernews.utils.Utils;
 
@@ -56,6 +58,7 @@ public class Story {
         return Utils.getTimeAgo(this.time);
     }
 
+    @NonNull
     @Override
     public String toString() {
         return title;
