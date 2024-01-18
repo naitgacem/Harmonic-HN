@@ -3,9 +3,7 @@ package com.simon.harmonichackernews;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.view.View;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
