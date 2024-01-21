@@ -564,40 +564,19 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
             @SuppressWarnings("deprecation")
             public void onActionClicked(int flag, View clickedView) {
                 switch (flag) {
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_USER:
-                        clickUser();
-                        break;
-
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_COMMENT:
-                        clickComment();
-                        break;
-
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_VOTE:
-                        clickVote();
-                        break;
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_PARENT:
-                        clickParent();
-                        break;
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_SHARE:
-                        clickShare(clickedView);
-                        break;
-
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_MORE:
-                        clickMore(clickedView);
-                        break;
-
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_REFRESH:
-                        webView.reload();
-                        break;
-
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_EXPAND:
-                        BottomSheetBehavior.from(bottomSheet).setState(BottomSheetBehavior.STATE_EXPANDED);
-                        break;
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_BROWSER:
-                        clickBrowser();
-                        break;
-
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_INVERT:
+                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_USER -> clickUser();
+                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_COMMENT -> clickComment();
+                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_VOTE -> clickVote();
+                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_PARENT -> clickParent();
+                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_SHARE ->
+                            clickShare(clickedView);
+                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_MORE ->
+                            clickMore(clickedView);
+                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_REFRESH -> webView.reload();
+                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_EXPAND ->
+                            BottomSheetBehavior.from(bottomSheet).setState(BottomSheetBehavior.STATE_EXPANDED);
+                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_BROWSER -> clickBrowser();
+                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_INVERT -> {
                         //this whole thing should only be visible for SDK_INT larger than Q (29)
                         //We first check the "new" version of dark mode, algorithmic darkening
                         // this requires the isDarkMode thing to be true for the theme which we
@@ -613,8 +592,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                                 WebSettingsCompat.setForceDark(webView.getSettings(), WebSettingsCompat.FORCE_DARK_ON);
                             }
                         }
-
-                        break;
+                    }
                 }
             }
         });
@@ -633,7 +611,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
                 if (integratedWebview) {
-                    //Shouldn't be neccessary but once I was stuck in comments and couldn't swipe up.
+                    //Shouldn't be necessary but once I was stuck in comments and couldn't swipe up.
                     //this just updates a flag so there's no performance impact
                     if (dy != 0 && callback != null) {
                         callback.onSwitchView(false);
