@@ -1406,9 +1406,10 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                                 smoothScroller.setTargetPosition(position);
                                 layoutManager.startSmoothScroll(smoothScroller);
 
-                                RecyclerView.ViewHolder v = recyclerView.findViewHolderForAdapterPosition(comments.indexOf(rootComment));
-                                if (v != null && !rootComment.expanded) {
-                                    v.itemView.callOnClick();
+
+                                if (!rootComment.expanded) {
+                                    rootComment.expanded = true;
+                                    adapter.notifyItemRangeChanged(position, rootComment.children);
                                 }
                                 break;
                             }
