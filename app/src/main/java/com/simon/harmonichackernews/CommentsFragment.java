@@ -2,6 +2,7 @@ package com.simon.harmonichackernews;
 
 import static android.content.Context.DOWNLOAD_SERVICE;
 import static androidx.webkit.WebViewFeature.isFeatureSupported;
+import static com.simon.harmonichackernews.adapters.CommentsRecyclerViewAdapter.TYPE_COLLAPSED;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -241,15 +242,15 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                             }
 
                             // Check if there is a fragment that should replace the story id
-                            try{
+                            try {
                                 id = Integer.parseInt(sFragmentId);
                                 if (id > 0) {
                                     Utils.initStory(story, id);
                                 }
-                            } catch (Exception ignored){
+                            } catch (Exception ignored) {
                                 // we tried..
                             }
-                        } catch (Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                             Toast.makeText(getContext(), "Unable to parse story", Toast.LENGTH_SHORT).show();
                             requireActivity().finish();
@@ -1393,11 +1394,30 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                         @Override
                         public void onCommentSelected(Comment comment) {
                             for (Comment c : comments) {
-                                if (c.id == comment.id) {
-                                    smoothScroller.setTargetPosition(comments.indexOf(c));
-                                    layoutManager.startSmoothScroll(smoothScroller);
-                                    break;
+                                if (c.id != comment.id) {
+                                    continue;
                                 }
+
+                                int position = comments.indexOf(c);
+                                Comment root_comment = c;
+                                if (adapter.getItemViewType(position) == TYPE_COLLAPSED) {
+                                    while (root_comment.parent != story.id) {
+                                        for (Comment d : comments) {
+                                            if (d.id == root_comment.parent) {
+                                                root_comment = d;
+                                            }
+                                        }
+                                    }
+                                }
+                                smoothScroller.setTargetPosition(position);
+                                layoutManager.startSmoothScroll(smoothScroller);
+
+
+                                RecyclerView.ViewHolder v = recyclerView.findViewHolderForAdapterPosition(comments.indexOf(root_comment));
+                                if (v != null && !root_comment.expanded) {
+                                    v.itemView.callOnClick();
+                                }
+                                break;
                             }
                         }
                     });
