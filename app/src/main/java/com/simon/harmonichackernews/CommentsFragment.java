@@ -1581,6 +1581,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                     new Pair<>("Unvote", R.drawable.ic_action_thumbs),
                     new Pair<>("Vote down", R.drawable.ic_action_thumb_down),
                     new Pair<>("Bookmark", R.drawable.ic_action_bookmark_border),
+                    new Pair<>("Parent", R.drawable.ic_action_arrow_up),
             };
         } else {
             items = new Pair[]{
@@ -1592,6 +1593,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                     new Pair<>("Unvote", R.drawable.ic_action_thumbs),
                     new Pair<>("Vote down", R.drawable.ic_action_thumb_down),
                     new Pair<>("Bookmark", R.drawable.ic_action_bookmark_border),
+                    new Pair<>("Parent", R.drawable.ic_action_arrow_up),
                     new Pair<>("Reply", R.drawable.ic_action_reply)
             };
         }
@@ -1648,10 +1650,16 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                     case 6: //downvote
                         UserActions.downvote(ctx, comment.id, getParentFragmentManager());
                         break;
-                    case 7:
+                    case 7: //bookmark
                         Utils.addBookmark(ctx, comment.id);
                         break;
-                    case 8: //reply
+                    case 8: //go to parent
+                        Comment parentComment = comment.parentComment;
+                        int position = comments.indexOf(parentComment);
+                        smoothScroller.setTargetPosition(position);
+                        layoutManager.startSmoothScroll(smoothScroller);
+                        break;
+                    case 9: //reply
                         if (!AccountUtils.hasAccountDetails(ctx)) {
                             AccountUtils.showLoginPrompt(getParentFragmentManager());
                             return;
