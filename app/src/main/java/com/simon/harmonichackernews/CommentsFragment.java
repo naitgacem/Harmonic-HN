@@ -1582,6 +1582,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                     new Pair<>("Vote down", R.drawable.ic_action_thumb_down),
                     new Pair<>("Bookmark", R.drawable.ic_action_bookmark_border),
                     new Pair<>("Parent", R.drawable.ic_action_arrow_up),
+                    new Pair<>("Root", R.drawable.ic_action_arrow_up),
             };
         } else {
             items = new Pair[]{
@@ -1594,6 +1595,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                     new Pair<>("Vote down", R.drawable.ic_action_thumb_down),
                     new Pair<>("Bookmark", R.drawable.ic_action_bookmark_border),
                     new Pair<>("Parent", R.drawable.ic_action_arrow_up),
+                    new Pair<>("Root", R.drawable.ic_action_arrow_up),
                     new Pair<>("Reply", R.drawable.ic_action_reply)
             };
         }
@@ -1654,12 +1656,12 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                         Utils.addBookmark(ctx, comment.id);
                         break;
                     case 8: //go to parent
-                        Comment parentComment = comment.parentComment;
-                        int position = comments.indexOf(parentComment);
-                        smoothScroller.setTargetPosition(position);
-                        layoutManager.startSmoothScroll(smoothScroller);
+                        scrollToComment(comment.parentComment);
                         break;
-                    case 9: //reply
+                    case 9: //go to parent
+                        scrollToComment(comment.rootComment);
+                        break;
+                    case 10: //reply
                         if (!AccountUtils.hasAccountDetails(ctx)) {
                             AccountUtils.showLoginPrompt(getParentFragmentManager());
                             return;
@@ -1678,6 +1680,12 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private void scrollToComment(Comment comment) {
+        int rootPos = comments.indexOf(comment);
+        smoothScroller.setTargetPosition(rootPos);
+        layoutManager.startSmoothScroll(smoothScroller);
     }
 
     public class MyWebViewClient extends WebViewClient {
