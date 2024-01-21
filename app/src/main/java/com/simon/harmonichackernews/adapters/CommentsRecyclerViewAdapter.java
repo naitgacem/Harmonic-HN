@@ -287,7 +287,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
                         Picasso.get()
                                 .load(story.nitterInfo.imgSrc)
                                 .into(headerViewHolder.nitterImage);
-                    } catch (Exception e){
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -421,7 +421,6 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
             final ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
             Comment comment = comments.get(position);
             itemViewHolder.comment = comments.get(position);
-
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
             DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -489,7 +488,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
                 itemViewHolder.commentHiddenText.setTypeface(FontUtils.activeRegular);
             }
 
-            itemViewHolder.commentBody.setVisibility( (!comment.expanded && collapseParent) ? GONE : View.VISIBLE);
+            itemViewHolder.commentBody.setVisibility((!comment.expanded && collapseParent) ? GONE : View.VISIBLE);
             itemViewHolder.commentHiddenText.setVisibility((!comment.expanded && collapseParent) ? View.VISIBLE : GONE);
 
             if (comment.expanded) {
@@ -535,7 +534,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
 
         public ItemViewHolder(View view) {
             super(view);
-            commentBody =  view.findViewById(R.id.comment_body);
+            commentBody = view.findViewById(R.id.comment_body);
             commentBy = view.findViewById(R.id.comment_by);
             commentByTime = view.findViewById(R.id.comment_by_time);
             commentHiddenCount = view.findViewById(R.id.comment_hidden_count);
@@ -677,7 +676,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
             arxivAbstract = view.findViewById(R.id.comments_header_arxiv_abstract);
             infoContainer = view.findViewById(R.id.comments_header_info_container);
             infoHeader = view.findViewById(R.id.comments_header_info_header);
-            emptyView =  view.findViewById(R.id.comments_header_empty);
+            emptyView = view.findViewById(R.id.comments_header_empty);
             emptyViewText = view.findViewById(R.id.comments_header_empty_text);
             headerView = view.findViewById(R.id.comments_header);
             loadingIndicator = view.findViewById(R.id.comments_header_loading);
@@ -829,11 +828,11 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
                 @Override
                 public void onSlide(@NonNull View bottomSheet, float slideOffset) {
                     //0 when small, 1 when opened
-                    sheetButtonsContainer.setAlpha((1-slideOffset)*(1-slideOffset)*(1-slideOffset));
-                    sheetButtonsContainer.getLayoutParams().height = Math.round((1-slideOffset) * (SHEET_ITEM_HEIGHT + navbarHeight));
+                    sheetButtonsContainer.setAlpha((1 - slideOffset) * (1 - slideOffset) * (1 - slideOffset));
+                    sheetButtonsContainer.getLayoutParams().height = Math.round((1 - slideOffset) * (SHEET_ITEM_HEIGHT + navbarHeight));
                     sheetButtonsContainer.requestLayout();
 
-                    float headerAlpha = Math.min(1, slideOffset*slideOffset*20);
+                    float headerAlpha = Math.min(1, slideOffset * slideOffset * 20);
                     actionsContainer.setAlpha(headerAlpha);
                     headerView.setAlpha(headerAlpha);
                 }
@@ -914,11 +913,11 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
 
     private boolean shouldShow(Comment comment) {
         /*
-        * Try to call shouldShow() on the parent if parent is expanded
-        * if parent is not expanded the return false.
-        *
-        * If parent is -1 (top level) always show
-        * */
+         * Try to call shouldShow() on the parent if parent is expanded
+         * if parent is not expanded the return false.
+         *
+         * If parent is -1 (top level) always show
+         * */
 
         if (comment.parent == -1) {
             return true;
