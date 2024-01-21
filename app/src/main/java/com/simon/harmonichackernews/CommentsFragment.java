@@ -1399,22 +1399,15 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                                 }
 
                                 int position = comments.indexOf(c);
-                                Comment root_comment = c;
-                                if (adapter.getItemViewType(position) == TYPE_COLLAPSED) {
-                                    while (root_comment.parent != story.id) {
-                                        for (Comment d : comments) {
-                                            if (d.id == root_comment.parent) {
-                                                root_comment = d;
-                                            }
-                                        }
-                                    }
+                                Comment rootComment = c;
+                                if (adapter.getItemViewType(position) == TYPE_COLLAPSED && c.rootComment != null) {
+                                    rootComment = c.rootComment;
                                 }
                                 smoothScroller.setTargetPosition(position);
                                 layoutManager.startSmoothScroll(smoothScroller);
 
-
-                                RecyclerView.ViewHolder v = recyclerView.findViewHolderForAdapterPosition(comments.indexOf(root_comment));
-                                if (v != null && !root_comment.expanded) {
+                                RecyclerView.ViewHolder v = recyclerView.findViewHolderForAdapterPosition(comments.indexOf(rootComment));
+                                if (v != null && !rootComment.expanded) {
                                     v.itemView.callOnClick();
                                 }
                                 break;
