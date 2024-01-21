@@ -16,9 +16,10 @@ public class Comment implements Serializable {
     public int depth;
     public int children;
     public int totalReplies;
-    public boolean matchesSearch = true;
 
     public List<Comment> childComments = new ArrayList<>();
+    public Comment parentComment;
+    public Comment rootComment;
     public int sortOrder;
 
     public Comment() {

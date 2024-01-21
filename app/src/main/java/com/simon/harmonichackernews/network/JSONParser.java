@@ -301,7 +301,6 @@ public class JSONParser {
                     oldComment.text = comment.text;
                     adapter.notifyItemChanged(i);
                 }
-
                 break;
             }
         }
@@ -381,19 +380,17 @@ public class JSONParser {
             } else {
                 //if it's not a top level comment, let's find its parent and place so that top answers have many children
                 boolean foundParent = false;
-
+                Comment parent;
                 for (int i = 1; i < comments.size(); i++) {
-                    if (comments.get(i).id == comment.parent) {
-                        /*OLD
-                        *
-                        * comments.add(i + 1, comment);
-                            adapter.notifyItemInserted(i + 1);
-                            * break;
-                        *
-                        *BELOW IS NOT QUITE WORKING YET TODO
-                        * */
-
+                    parent = comments.get(i);
+                    if (parent.id == comment.parent) {
                         foundParent = true;
+                        comment.parentComment = parent;
+                        if(parent.depth == 0){
+                            comment.rootComment = parent;
+                        } else {
+                            comment.rootComment = parent.rootComment;
+                        }
                         //having found the parent, lets keep going until we find a comment with fewer children or depth goes up
                         boolean placed = false;
                         for (int j = 1; j < comments.size() - i; j++) {
