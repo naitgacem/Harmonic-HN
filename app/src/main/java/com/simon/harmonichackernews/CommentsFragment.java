@@ -101,6 +101,7 @@ import com.simon.harmonichackernews.network.NetworkComponent;
 import com.simon.harmonichackernews.network.UserActions;
 import com.simon.harmonichackernews.utils.AccountUtils;
 import com.simon.harmonichackernews.utils.CommentSorter;
+import com.simon.harmonichackernews.utils.CommentsUtils;
 import com.simon.harmonichackernews.utils.DialogUtils;
 import com.simon.harmonichackernews.utils.FileDownloader;
 import com.simon.harmonichackernews.utils.SettingsUtils;
@@ -1568,47 +1569,19 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
     @Override
     public void onItemClick(Comment comment, int pos, View view) {
         final Context ctx = getContext();
+        List<Pair<String, Integer>> itemsList = CommentsUtils.getPossibleActions(comment);
 
-        Pair[] items;
-        // TODO clean up this mess
-        if (Utils.timeInSecondsMoreThanTwoWeeksAgo(comment.time)) {
-            items = new Pair[]{
-                    new Pair<>("View user (" + comment.by + ")", R.drawable.ic_action_user),
-                    new Pair<>("Share comment link", R.drawable.ic_action_share),
-                    new Pair<>("Copy text", R.drawable.ic_action_copy),
-                    new Pair<>("Select text", R.drawable.ic_action_select),
-                    new Pair<>("Vote up", R.drawable.ic_action_thumbs_up),
-                    new Pair<>("Unvote", R.drawable.ic_action_thumbs),
-                    new Pair<>("Vote down", R.drawable.ic_action_thumb_down),
-                    new Pair<>("Bookmark", R.drawable.ic_action_bookmark_border),
-                    new Pair<>("Parent", R.drawable.ic_action_arrow_up),
-                    new Pair<>("Root", R.drawable.ic_action_arrow_up),
-            };
-        } else {
-            items = new Pair[]{
-                    new Pair<>("View user (" + comment.by + ")", R.drawable.ic_action_user),
-                    new Pair<>("Share comment link", R.drawable.ic_action_share),
-                    new Pair<>("Copy text", R.drawable.ic_action_copy),
-                    new Pair<>("Select text", R.drawable.ic_action_select),
-                    new Pair<>("Vote up", R.drawable.ic_action_thumbs_up),
-                    new Pair<>("Unvote", R.drawable.ic_action_thumbs),
-                    new Pair<>("Vote down", R.drawable.ic_action_thumb_down),
-                    new Pair<>("Bookmark", R.drawable.ic_action_bookmark_border),
-                    new Pair<>("Parent", R.drawable.ic_action_arrow_up),
-                    new Pair<>("Root", R.drawable.ic_action_arrow_up),
-                    new Pair<>("Reply", R.drawable.ic_action_reply)
-            };
-        }
-
-        ListAdapter adapter = new ArrayAdapter<Pair<String, Integer>>(ctx,
+        ListAdapter adapter = new ArrayAdapter<>(ctx,
                 R.layout.comment_dialog_item,
                 R.id.comment_dialog_text,
-                items) {
-            public View getView(int position, View convertView, ViewGroup parent) {
+                itemsList) {
+            @NonNull
+            @Override
+            public View getView(int position, View convertView, @NonNull ViewGroup parent) {
                 TextView view = (TextView) super.getView(position, convertView, parent);
 
-                view.setCompoundDrawablesWithIntrinsicBounds((Integer) items[position].second, 0, 0, 0);
-                view.setText((CharSequence) items[position].first);
+                view.setCompoundDrawablesWithIntrinsicBounds(itemsList.get(position).second, 0, 0, 0);
+                view.setText((CharSequence) itemsList.get(position).first);
 
                 return view;
             }
@@ -1658,7 +1631,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                     case 8: //go to parent
                         scrollToComment(comment.parentComment);
                         break;
-                    case 9: //go to parent
+                    case 9: //go to root
                         scrollToComment(comment.rootComment);
                         break;
                     case 10: //reply
@@ -1683,6 +1656,9 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
     }
 
     private void scrollToComment(Comment comment) {
+        if(comment == null){
+            return;
+        }
         int rootPos = comments.indexOf(comment);
         smoothScroller.setTargetPosition(rootPos);
         layoutManager.startSmoothScroll(smoothScroller);
