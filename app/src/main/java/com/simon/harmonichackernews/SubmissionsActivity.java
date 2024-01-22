@@ -17,6 +17,7 @@ import com.simon.harmonichackernews.adapters.StoryRecyclerViewAdapter;
 import com.simon.harmonichackernews.data.Story;
 import com.simon.harmonichackernews.network.JSONParser;
 import com.simon.harmonichackernews.network.NetworkComponent;
+import com.simon.harmonichackernews.utils.CommentsUtils;
 import com.simon.harmonichackernews.utils.SettingsUtils;
 import com.simon.harmonichackernews.utils.ThemeUtils;
 import com.simon.harmonichackernews.utils.Utils;
@@ -103,9 +104,9 @@ public class SubmissionsActivity extends AppCompatActivity {
                 Story story = submissions.get(position);
 
                 Intent intent = new Intent(getApplicationContext(), CommentsActivity.class);
-                intent.putExtra(CommentsFragment.EXTRA_ID, story.commentMasterId);
-                intent.putExtra(CommentsFragment.EXTRA_TITLE, story.commentMasterTitle);
-                intent.putExtra(CommentsFragment.EXTRA_URL, story.commentMasterUrl);
+                intent.putExtra(CommentsUtils.EXTRA_ID, story.commentMasterId);
+                intent.putExtra(CommentsUtils.EXTRA_TITLE, story.commentMasterTitle);
+                intent.putExtra(CommentsUtils.EXTRA_URL, story.commentMasterUrl);
 
                 startActivity(intent);
 
@@ -136,7 +137,7 @@ public class SubmissionsActivity extends AppCompatActivity {
 
     private void openComments(Story story, boolean showWebsite) {
         Bundle bundle = story.toBundle();
-        bundle.putBoolean(CommentsFragment.EXTRA_SHOW_WEBSITE, showWebsite);
+        bundle.putBoolean(CommentsUtils.EXTRA_SHOW_WEBSITE, showWebsite);
 
         Intent intent = new Intent(SubmissionsActivity.this, CommentsActivity.class);
         intent.putExtras(bundle);

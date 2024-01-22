@@ -4,7 +4,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 
-import com.simon.harmonichackernews.CommentsFragment;
+import com.simon.harmonichackernews.utils.CommentsUtils;
 import com.simon.harmonichackernews.utils.Utils;
 
 import java.util.ArrayList;
@@ -66,20 +66,20 @@ public class Story {
 
     public Bundle toBundle() {
         Bundle bundle = new Bundle();
-        bundle.putString(CommentsFragment.EXTRA_TITLE, title);
-        bundle.putString(CommentsFragment.EXTRA_PDF_TITLE, pdfTitle);
-        bundle.putString(CommentsFragment.EXTRA_BY, by);
-        bundle.putString(CommentsFragment.EXTRA_URL, url);
-        bundle.putInt(CommentsFragment.EXTRA_TIME, time);
-        bundle.putIntArray(CommentsFragment.EXTRA_KIDS, kids);
-        bundle.putIntArray(CommentsFragment.EXTRA_POLL_OPTIONS, pollOptions);
-        bundle.putInt(CommentsFragment.EXTRA_DESCENDANTS, descendants);
-        bundle.putInt(CommentsFragment.EXTRA_ID, id);
-        bundle.putInt(CommentsFragment.EXTRA_SCORE, score);
-        bundle.putString(CommentsFragment.EXTRA_TEXT, text);
-        bundle.putBoolean(CommentsFragment.EXTRA_IS_LINK, isLink);
-        bundle.putBoolean(CommentsFragment.EXTRA_IS_COMMENT, isComment);
-        bundle.putInt(CommentsFragment.EXTRA_PARENT_ID, parentId);
+        bundle.putString(CommentsUtils.EXTRA_TITLE, title);
+        bundle.putString(CommentsUtils.EXTRA_PDF_TITLE, pdfTitle);
+        bundle.putString(CommentsUtils.EXTRA_BY, by);
+        bundle.putString(CommentsUtils.EXTRA_URL, url);
+        bundle.putInt(CommentsUtils.EXTRA_TIME, time);
+        bundle.putIntArray(CommentsUtils.EXTRA_KIDS, kids);
+        bundle.putIntArray(CommentsUtils.EXTRA_POLL_OPTIONS, pollOptions);
+        bundle.putInt(CommentsUtils.EXTRA_DESCENDANTS, descendants);
+        bundle.putInt(CommentsUtils.EXTRA_ID, id);
+        bundle.putInt(CommentsUtils.EXTRA_SCORE, score);
+        bundle.putString(CommentsUtils.EXTRA_TEXT, text);
+        bundle.putBoolean(CommentsUtils.EXTRA_IS_LINK, isLink);
+        bundle.putBoolean(CommentsUtils.EXTRA_IS_COMMENT, isComment);
+        bundle.putInt(CommentsUtils.EXTRA_PARENT_ID, parentId);
         return bundle;
     }
 

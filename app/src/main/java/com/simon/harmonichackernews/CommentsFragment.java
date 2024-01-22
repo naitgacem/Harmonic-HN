@@ -126,23 +126,6 @@ import okhttp3.Call;
 
 public class CommentsFragment extends Fragment implements CommentsRecyclerViewAdapter.CommentClickListener {
 
-    public final static String EXTRA_TITLE = "com.simon.harmonichackernews.EXTRA_TITLE";
-    public final static String EXTRA_PDF_TITLE = "com.simon.harmonichackernews.EXTRA_PDF_TITLE";
-    public final static String EXTRA_BY = "com.simon.harmonichackernews.EXTRA_BY";
-    public final static String EXTRA_URL = "com.simon.harmonichackernews.EXTRA_URL";
-    public final static String EXTRA_TIME = "com.simon.harmonichackernews.EXTRA_TIME";
-    public final static String EXTRA_KIDS = "com.simon.harmonichackernews.EXTRA_KIDS";
-    public final static String EXTRA_POLL_OPTIONS = "com.simon.harmonichackernews.EXTRA_POLL_OPTIONS";
-    public final static String EXTRA_DESCENDANTS = "com.simon.harmonichackernews.EXTRA_DESCENDANTS";
-    public final static String EXTRA_ID = "com.simon.harmonichackernews.EXTRA_ID";
-    public final static String EXTRA_SCORE = "com.simon.harmonichackernews.EXTRA_SCORE";
-    public final static String EXTRA_TEXT = "com.simon.harmonichackernews.EXTRA_TEXT";
-    public final static String EXTRA_IS_LINK = "com.simon.harmonichackernews.EXTRA_IS_LINK";
-    public final static String EXTRA_IS_COMMENT = "com.simon.harmonichackernews.EXTRA_IS_COMMENT";
-    public final static String EXTRA_PARENT_ID = "com.simon.harmonichackernews.EXTRA_PARENT_ID";
-
-    public final static String EXTRA_FORWARD = "com.simon.harmonichackernews.EXTRA_FORWARD";
-    public final static String EXTRA_SHOW_WEBSITE = "com.simon.harmonichackernews.EXTRA_SHOW_WEBSITE";
     private final static String PDF_MIME_TYPE = "application/pdf";
     private final static String PDF_LOADER_URL = "file:///android_asset/pdf/index.html";
 
@@ -194,25 +177,11 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         story = new Story();
 
         Bundle bundle = getArguments();
-        if (bundle != null && bundle.getString(EXTRA_TITLE) != null && bundle.getString(EXTRA_BY) != null) {
-            story.title = bundle.getString(EXTRA_TITLE);
-            story.pdfTitle = bundle.getString(EXTRA_PDF_TITLE, null);
-            story.by = bundle.getString(EXTRA_BY);
-            story.url = bundle.getString(EXTRA_URL);
-            story.time = bundle.getInt(EXTRA_TIME, 0);
-            story.kids = bundle.getIntArray(EXTRA_KIDS);
-            story.pollOptions = bundle.getIntArray(EXTRA_POLL_OPTIONS);
-            story.descendants = bundle.getInt(EXTRA_DESCENDANTS, 0);
-            story.id = bundle.getInt(EXTRA_ID, 0);
-            story.parentId = bundle.getInt(EXTRA_PARENT_ID, 0);
-            story.score = bundle.getInt(EXTRA_SCORE, 0);
-            story.text = bundle.getString(EXTRA_TEXT);
-            story.isLink = bundle.getBoolean(EXTRA_IS_LINK, true);
-            story.isComment = bundle.getBoolean(EXTRA_IS_COMMENT, false);
-            story.loaded = true;
+        if (bundle != null && bundle.getString(CommentsUtils.EXTRA_TITLE) != null && bundle.getString(CommentsUtils.EXTRA_BY) != null) {
+            CommentsUtils.fillStoryFromBundle(story, bundle);
 
             if (Utils.isTablet(getResources())) {
-                int forward = bundle.getInt(EXTRA_FORWARD, 0);
+                int forward = bundle.getInt(CommentsUtils.EXTRA_FORWARD, 0);
                 if (forward == 0) {
                     setExitTransition(new MaterialFadeThrough());
                     setEnterTransition(new MaterialFadeThrough());
@@ -225,53 +194,56 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                 }
             }
 
-            showWebsite = bundle.getBoolean(EXTRA_SHOW_WEBSITE, false);
+            showWebsite = bundle.getBoolean(CommentsUtils.EXTRA_SHOW_WEBSITE, false);
         } else {
             story.loaded = false;
             story.id = -1;
             //check if url intercept
             Intent intent = requireActivity().getIntent();
-            if (intent != null) {
-                if (Intent.ACTION_VIEW.equalsIgnoreCase(intent.getAction())) {
-                    if (intent.getData() != null) {
-                        String sId = intent.getData().getQueryParameter("id");
-                        String sFragmentId = intent.getData().getFragment();
+            if(intent == null){
+                return;
+            }
+
+            if (Intent.ACTION_VIEW.equalsIgnoreCase(intent.getAction())) {
+                if (intent.getData() != null) {
+                    String sId = intent.getData().getQueryParameter("id");
+                    String sFragmentId = intent.getData().getFragment();
+                    try {
+                        int id = Integer.parseInt(sId);
+                        if (id > 0) {
+                            Utils.initStory(story, id);
+                        }
+
+                        // Check if there is a fragment that should replace the story id
                         try {
-                            int id = Integer.parseInt(sId);
+                            id = Integer.parseInt(sFragmentId);
                             if (id > 0) {
                                 Utils.initStory(story, id);
                             }
-
-                            // Check if there is a fragment that should replace the story id
-                            try {
-                                id = Integer.parseInt(sFragmentId);
-                                if (id > 0) {
-                                    Utils.initStory(story, id);
-                                }
-                            } catch (Exception ignored) {
-                                // we tried..
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Toast.makeText(getContext(), "Unable to parse story", Toast.LENGTH_SHORT).show();
-                            requireActivity().finish();
+                        } catch (Exception ignored) {
+                            // we tried..
                         }
-                    }
-                    if (story.id == -1) {
+                    } catch (Exception e) {
+                        e.printStackTrace();
                         Toast.makeText(getContext(), "Unable to parse story", Toast.LENGTH_SHORT).show();
                         requireActivity().finish();
                     }
-                } else {
-                    if (intent.getIntExtra(EXTRA_ID, -1) != -1) {
-                        story.id = intent.getIntExtra(EXTRA_ID, -1);
-                        story.parentId = intent.getIntExtra(EXTRA_PARENT_ID, 0);
-                        story.title = intent.getStringExtra(EXTRA_TITLE);
-                        story.by = "";
-                        story.url = "";
-                        story.score = 0;
-                    }
+                }
+                if (story.id == -1) {
+                    Toast.makeText(getContext(), "Unable to parse story", Toast.LENGTH_SHORT).show();
+                    requireActivity().finish();
+                }
+            } else {
+                if (intent.getIntExtra(CommentsUtils.EXTRA_ID, -1) != -1) {
+                    story.id = intent.getIntExtra(CommentsUtils.EXTRA_ID, -1);
+                    story.parentId = intent.getIntExtra(CommentsUtils.EXTRA_PARENT_ID, 0);
+                    story.title = intent.getStringExtra(CommentsUtils.EXTRA_TITLE);
+                    story.by = "";
+                    story.url = "";
+                    story.score = 0;
                 }
             }
+
         }
 
 

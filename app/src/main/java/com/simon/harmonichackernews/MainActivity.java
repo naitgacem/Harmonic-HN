@@ -17,6 +17,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.simon.harmonichackernews.data.CommentsScrollProgress;
 import com.simon.harmonichackernews.data.Story;
+import com.simon.harmonichackernews.utils.CommentsUtils;
 import com.simon.harmonichackernews.utils.FoldableSplitInitializer;
 import com.simon.harmonichackernews.utils.SettingsUtils;
 import com.simon.harmonichackernews.utils.ThemeUtils;
@@ -77,8 +78,8 @@ public class MainActivity extends BaseActivity implements StoriesFragment.StoryC
     public void openStory(Story story, int pos, boolean showWebsite) {
         Bundle bundle = story.toBundle();
 
-        bundle.putInt(CommentsFragment.EXTRA_FORWARD, pos - lastPosition);
-        bundle.putBoolean(CommentsFragment.EXTRA_SHOW_WEBSITE, showWebsite);
+        bundle.putInt(CommentsUtils.EXTRA_FORWARD, pos - lastPosition);
+        bundle.putBoolean(CommentsUtils.EXTRA_SHOW_WEBSITE, showWebsite);
 
         if (FoldableSplitInitializer.isSplitSupported(this)) {
             bundle.putBoolean(CommentsActivity.PREVENT_BACK, true);
