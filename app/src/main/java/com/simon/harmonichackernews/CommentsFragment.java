@@ -114,11 +114,10 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
 
     private final static String PDF_MIME_TYPE = "application/pdf";
     private final static String PDF_LOADER_URL = "file:///android_asset/pdf/index.html";
-
+    private final Object requestTag = new Object();
     private BottomSheetFragmentCallback callback;
     private List<Comment> comments;
     private RequestQueue queue;
-    private final Object requestTag = new Object();
     private CommentsRecyclerViewAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
@@ -130,6 +129,27 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
     private LinearProgressIndicator progressIndicator;
     private LinearLayout bottomSheet;
     private WebView webView;
+    private FrameLayout webViewContainer;
+    private View webViewBackdrop;
+    private Space headerSpacer;
+    private MaterialButton downloadButton;
+    private boolean showNavButtons = false;
+    private boolean showWebsite = false;
+    private boolean integratedWebview = true;
+    private boolean prefIntegratedWebview = true;
+    private String preloadWebview = "never";
+    private boolean matchWebviewTheme = true;
+    private boolean blockAds = true;
+    private boolean startedLoading = false;
+    private boolean initializedWebView = false;
+    private int topInset = 0;
+    private long lastLoaded = 0;
+    private OnBackPressedCallback backPressedCallback;
+    private String username;
+    private Story story;
+    public CommentsFragment() {
+        super(R.layout.fragment_comments);
+    }
 
     public List<Comment> getComments() {
         return comments;
@@ -167,29 +187,6 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         return story;
     }
 
-    private FrameLayout webViewContainer;
-    private View webViewBackdrop;
-    private Space headerSpacer;
-    private MaterialButton downloadButton;
-    private boolean showNavButtons = false;
-    private boolean showWebsite = false;
-    private boolean integratedWebview = true;
-    private boolean prefIntegratedWebview = true;
-    private String preloadWebview = "never";
-    private boolean matchWebviewTheme = true;
-    private boolean blockAds = true;
-    private boolean startedLoading = false;
-    private boolean initializedWebView = false;
-    private int topInset = 0;
-    private long lastLoaded = 0;
-    private OnBackPressedCallback backPressedCallback;
-    private String username;
-    private Story story;
-
-    public CommentsFragment() {
-        super(R.layout.fragment_comments);
-    }
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -223,7 +220,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
             story.id = -1;
             //check if url intercept
             Intent intent = requireActivity().getIntent();
-            if(intent == null){
+            if (intent == null) {
                 return;
             }
 
@@ -757,9 +754,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
 
         webView.setDownloadListener(new DownloadListener() {
             @Override
-            public void onDownloadStart(String url, String userAgent,
-                                        String contentDisposition, String mimetype,
-                                        long contentLength) {
+            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
 
                 if (!TextUtils.isEmpty(mimetype) && mimetype.equals(PDF_MIME_TYPE) && (url.startsWith("http://") || url.startsWith("https://"))) {
                     downloadPdf(url, contentDisposition, mimetype, webView.getContext());
@@ -1116,26 +1111,25 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         for (int optionId : story.pollOptions) {
             String url = "https://hacker-news.firebaseio.com/v0/item/" + optionId + ".json";
 
-            StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                    response -> {
-                        try {
-                            for (int i = 0; i < story.pollOptionArrayList.size(); i++) {
-                                PollOption pollOption = story.pollOptionArrayList.get(i);
+            StringRequest stringRequest = new StringRequest(Request.Method.GET, url, response -> {
+                try {
+                    for (int i = 0; i < story.pollOptionArrayList.size(); i++) {
+                        PollOption pollOption = story.pollOptionArrayList.get(i);
 
-                                if (pollOption.id == optionId) {
-                                    pollOption.loaded = true;
+                        if (pollOption.id == optionId) {
+                            pollOption.loaded = true;
 
-                                    JSONObject jsonObject = new JSONObject(response);
-                                    pollOption.points = jsonObject.getInt("score");
-                                    pollOption.text = JSONParser.preprocessHtml(jsonObject.getString("text"));
+                            JSONObject jsonObject = new JSONObject(response);
+                            pollOption.points = jsonObject.getInt("score");
+                            pollOption.text = JSONParser.preprocessHtml(jsonObject.getString("text"));
 
-                                    adapter.notifyItemChanged(0);
-                                }
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                            adapter.notifyItemChanged(0);
                         }
-                    }, error -> {
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }, error -> {
 
             });
 
@@ -1397,7 +1391,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
     @Override
     public void onItemClick(Comment comment, int pos, View view) {
         final Context ctx = getContext();
-        if(ctx == null){
+        if (ctx == null) {
             return;
         }
 
@@ -1409,6 +1403,10 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         dialog.show();
     }
 
+
+    public interface BottomSheetFragmentCallback {
+        void onSwitchView(boolean isAtWebView);
+    }
 
     // TODO move this class out of here
     public class MyWebViewClient extends WebViewClient {
@@ -1520,10 +1518,6 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
             // return "true" instead.
             return true;
         }
-    }
-
-    public interface BottomSheetFragmentCallback {
-        void onSwitchView(boolean isAtWebView);
     }
 
 }
