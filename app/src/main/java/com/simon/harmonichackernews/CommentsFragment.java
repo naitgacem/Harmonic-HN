@@ -1,33 +1,22 @@
 package com.simon.harmonichackernews;
 
-import static android.content.Context.DOWNLOAD_SERVICE;
-import static androidx.webkit.WebViewFeature.isFeatureSupported;
 import static com.simon.harmonichackernews.adapters.CommentsRecyclerViewAdapter.TYPE_COLLAPSED;
 import static com.simon.harmonichackernews.view.ViewUtils.createCommentDialogBuilder;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.SuppressLint;
-import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
-import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.DownloadListener;
 import android.webkit.RenderProcessGoneDetail;
-import android.webkit.URLUtil;
-import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -37,7 +26,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Space;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -53,16 +41,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.webkit.WebSettingsCompat;
-import androidx.webkit.WebViewFeature;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -71,120 +53,66 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.transition.MaterialFadeThrough;
 import com.google.android.material.transition.MaterialSharedAxis;
 import com.simon.harmonichackernews.adapters.CommentsRecyclerViewAdapter;
-import com.simon.harmonichackernews.data.ArxivInfo;
 import com.simon.harmonichackernews.data.Comment;
 import com.simon.harmonichackernews.data.CommentsScrollProgress;
 import com.simon.harmonichackernews.data.NitterInfo;
-import com.simon.harmonichackernews.data.PollOption;
-import com.simon.harmonichackernews.data.RepoInfo;
 import com.simon.harmonichackernews.data.Story;
-import com.simon.harmonichackernews.data.WikipediaInfo;
-import com.simon.harmonichackernews.linkpreview.ArxivAbstractGetter;
-import com.simon.harmonichackernews.linkpreview.GitHubInfoGetter;
 import com.simon.harmonichackernews.linkpreview.NitterGetter;
-import com.simon.harmonichackernews.linkpreview.WikipediaGetter;
 import com.simon.harmonichackernews.network.ArchiveOrgUrlGetter;
-import com.simon.harmonichackernews.network.JSONParser;
 import com.simon.harmonichackernews.network.NetworkComponent;
 import com.simon.harmonichackernews.network.UserActions;
 import com.simon.harmonichackernews.utils.AccountUtils;
-import com.simon.harmonichackernews.utils.CommentSorter;
 import com.simon.harmonichackernews.utils.CommentsUtils;
-import com.simon.harmonichackernews.utils.FileDownloader;
-import com.simon.harmonichackernews.utils.PdfAndroidJavascriptBridge;
 import com.simon.harmonichackernews.utils.SettingsUtils;
 import com.simon.harmonichackernews.utils.ShareUtils;
 import com.simon.harmonichackernews.utils.ThemeUtils;
 import com.simon.harmonichackernews.utils.Utils;
 import com.simon.harmonichackernews.utils.ViewUtils;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import okhttp3.Call;
-
 public class CommentsFragment extends Fragment implements CommentsRecyclerViewAdapter.CommentClickListener {
 
-    private final static String PDF_MIME_TYPE = "application/pdf";
-    private final static String PDF_LOADER_URL = "file:///android_asset/pdf/index.html";
-    private final Object requestTag = new Object();
-    private BottomSheetFragmentCallback callback;
-    private List<Comment> comments;
-    private RequestQueue queue;
-    private CommentsRecyclerViewAdapter adapter;
-    private SwipeRefreshLayout swipeRefreshLayout;
-    private RecyclerView recyclerView;
-    private RecyclerView recyclerViewSwipe;
-    private RecyclerView recyclerViewRegular;
-    private LinearLayoutManager layoutManager;
-    private RecyclerView.SmoothScroller smoothScroller;
-    private LinearLayout scrollNavigation;
-    private LinearProgressIndicator progressIndicator;
-    private LinearLayout bottomSheet;
-    private WebView webView;
-    private FrameLayout webViewContainer;
-    private View webViewBackdrop;
-    private Space headerSpacer;
-    private MaterialButton downloadButton;
-    private boolean showNavButtons = false;
-    private boolean showWebsite = false;
-    private boolean integratedWebview = true;
-    private boolean prefIntegratedWebview = true;
-    private String preloadWebview = "never";
-    private boolean matchWebviewTheme = true;
-    private boolean blockAds = true;
-    private boolean startedLoading = false;
-    private boolean initializedWebView = false;
-    private int topInset = 0;
-    private long lastLoaded = 0;
-    private OnBackPressedCallback backPressedCallback;
-    private String username;
-    private Story story;
+    public final static String PDF_MIME_TYPE = "application/pdf";
+    public final static String PDF_LOADER_URL = "file:///android_asset/pdf/index.html";
+    public final Object requestTag = new Object();
+    public BottomSheetFragmentCallback callback;
+    public List<Comment> comments;
+    public RequestQueue queue;
+    public CommentsRecyclerViewAdapter adapter;
+    public SwipeRefreshLayout swipeRefreshLayout;
+    public RecyclerView recyclerView;
+    public RecyclerView recyclerViewSwipe;
+    public RecyclerView recyclerViewRegular;
+    public LinearLayoutManager layoutManager;
+    public RecyclerView.SmoothScroller smoothScroller;
+    public LinearLayout scrollNavigation;
+    public LinearProgressIndicator progressIndicator;
+    public LinearLayout bottomSheet;
+    public WebView webView;
+    public FrameLayout webViewContainer;
+    public View webViewBackdrop;
+    public Space headerSpacer;
+    public MaterialButton downloadButton;
+    public boolean showNavButtons = false;
+    public boolean showWebsite = false;
+    public boolean integratedWebview = true;
+    public boolean prefIntegratedWebview = true;
+    public String preloadWebview = "never";
+    public boolean matchWebviewTheme = true;
+    public boolean blockAds = true;
+    public boolean startedLoading = false;
+    public boolean initializedWebView = false;
+    public int topInset = 0;
+    public long lastLoaded = 0;
+    public OnBackPressedCallback backPressedCallback;
+    public String username;
+    public Story story;
     public CommentsFragment() {
         super(R.layout.fragment_comments);
-    }
-
-    public List<Comment> getComments() {
-        return comments;
-    }
-
-    public RequestQueue getQueue() {
-        return queue;
-    }
-
-    public Object getRequestTag() {
-        return requestTag;
-    }
-
-    public CommentsRecyclerViewAdapter getAdapter() {
-        return adapter;
-    }
-
-    public RecyclerView getRecyclerView() {
-        return recyclerView;
-    }
-
-    public WebView getWebView() {
-        return webView;
-    }
-
-    public View getWebViewBackdrop() {
-        return webViewBackdrop;
-    }
-
-    public int getTopInset() {
-        return topInset;
-    }
-
-    public Story getStory() {
-        return story;
     }
 
     @Override
@@ -323,7 +251,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
                 }
             }
         };
-        toggleBackPressedCallback(false);
+        com.simon.harmonichackernews.view.ViewUtils.toggleBackPressedCallback(this, false);
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), backPressedCallback);
 
         swipeRefreshLayout.setOnRefreshListener(this::refreshComments);
@@ -363,7 +291,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         progressIndicator = view.findViewById(R.id.webview_progress);
 
         if (integratedWebview) {
-            initializeWebView();
+            com.simon.harmonichackernews.view.ViewUtils.initializeWebView(this);
         } else {
             BottomSheetBehavior.from(bottomSheet).setDraggable(false);
         }
@@ -412,27 +340,19 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
             return true;
         });
 
-        initializeRecyclerView();
+        com.simon.harmonichackernews.view.ViewUtils.initializeRecyclerView(this);
 
         queue = NetworkComponent.getRequestQueueInstance(requireContext());
         String cachedResponse = Utils.loadCachedStory(getContext(), story.id);
 
-        loadStoryAndComments(story.id, cachedResponse);
+        CommentsUtils.loadStoryAndComments(this, story.id, cachedResponse);
 
         //if this isn't here, the addition of the text appears to scroll the recyclerview down a little
         recyclerView.scrollToPosition(0);
 
 
         if (cachedResponse != null) {
-            handleJsonResponse(story.id, cachedResponse, false, false, !showWebsite);
-        }
-    }
-
-    private void toggleBackPressedCallback(boolean newStatus) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            backPressedCallback.setEnabled(newStatus);
-        } else {
-            backPressedCallback.setEnabled(true);
+            CommentsUtils.handleJsonResponse(this, story.id, cachedResponse, false, false, !showWebsite);
         }
     }
 
@@ -460,427 +380,6 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         }
     }
 
-    private void initializeRecyclerView() {
-        adapter = new CommentsRecyclerViewAdapter(
-                integratedWebview,
-                bottomSheet,
-                requireActivity().getSupportFragmentManager(),
-                comments,
-                story,
-                SettingsUtils.shouldCollapseParent(getContext()),
-                SettingsUtils.shouldShowThumbnails(getContext()),
-                username,
-                SettingsUtils.getPreferredCommentTextSize(getContext()),
-                SettingsUtils.shouldUseMonochromeCommentDepthIndicators(getContext()),
-                SettingsUtils.shouldShowNavigationButtons(getContext()),
-                SettingsUtils.getPreferredFont(getContext()),
-                isFeatureSupported(WebViewFeature.FORCE_DARK) || WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING),
-                SettingsUtils.shouldShowTopLevelDepthIndicator(getContext()),
-                ThemeUtils.getPreferredTheme(getContext()),
-                Utils.isTablet(getResources()),
-                SettingsUtils.getPreferredFaviconProvider(getContext()),
-                SettingsUtils.shouldSwapCommentLongPressTap(getContext()));
-
-        adapter.setOnHeaderClickListener(story1 -> Utils.launchCustomTab(getActivity(), story1.url));
-
-        adapter.setOnCommentClickListener((comment, index, commentView) -> {
-            comment.expanded = !comment.expanded;
-
-            int offset = 0;
-            int lastChildIndex = adapter.getIndexOfLastChild(comment.depth, index);
-            if (index == lastChildIndex && !adapter.collapseParent) {
-                return;
-            }
-
-            final RecyclerView.ViewHolder holder = recyclerView.findViewHolderForAdapterPosition(index);
-            if (holder != null && !adapter.collapseParent && holder instanceof CommentsRecyclerViewAdapter.ItemViewHolder) {
-                //if we can reach the ViewHolder (which we should), we can animate the
-                // hiddenIndicator ourselves to get around a FULL item refresh (which flashes
-                // all the text which we don't want)
-                offset = 1;
-                final TextView hiddenIndicator = ((CommentsRecyclerViewAdapter.ItemViewHolder) holder).commentHiddenCount;
-                int shortAnimationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-                hiddenIndicator.setText("+" + (lastChildIndex - index));
-
-                if (comment.expanded) {
-                    //fade out
-                    hiddenIndicator.setVisibility(View.VISIBLE);
-                    hiddenIndicator.setAlpha(1f);
-                    hiddenIndicator.animate()
-                            .alpha(0f)
-                            .setDuration(shortAnimationDuration)
-                            .setListener(new AnimatorListenerAdapter() {
-                                @Override
-                                public void onAnimationEnd(Animator animation) {
-                                    hiddenIndicator.setVisibility(View.INVISIBLE);
-                                }
-                            });
-                } else {
-                    //fade in
-                    hiddenIndicator.setVisibility(View.VISIBLE);
-                    hiddenIndicator.setAlpha(0f);
-                    hiddenIndicator.animate()
-                            .alpha(1f)
-                            .setDuration(shortAnimationDuration)
-                            .setListener(null);
-                }
-            } else {
-                adapter.notifyItemChanged(index);
-            }
-
-            if (lastChildIndex != index || adapter.collapseParent) {
-                // + 1 since if we have 1 subcomment we have changed the parent and the child
-                adapter.notifyItemRangeChanged(index + 1, lastChildIndex - index + 1 - offset);
-            }
-
-            //next couple of lines makes it so that if we hide parents and click the comment at
-            //the top of the screen, we scroll down to the next comment automatically
-            //this is only applicable if we're hiding a comment
-            if (layoutManager != null && !comment.expanded && adapter.collapseParent) {
-                int firstVisible = layoutManager.findFirstVisibleItemPosition();
-                int clickedIndex = comments.indexOf(comment);
-
-                //if we clicked the top one and the new top level comment exists
-                if (clickedIndex == firstVisible && comments.size() > lastChildIndex + 1) {
-                    smoothScroller.setTargetPosition(lastChildIndex + 1);
-                    layoutManager.startSmoothScroll(smoothScroller);
-
-                }
-            }
-        });
-
-        adapter.setOnCommentLongClickListener(this);
-        adapter.setRetryListener(this::refreshComments);
-
-        adapter.setOnHeaderActionClickListener(new CommentsRecyclerViewAdapter.HeaderActionClickListener() {
-            @Override
-            @SuppressWarnings("deprecation")
-            public void onActionClicked(int flag, View clickedView) {
-                switch (flag) {
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_USER -> clickUser();
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_COMMENT -> clickComment();
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_VOTE -> clickVote();
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_PARENT -> clickParent();
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_SHARE ->
-                            clickShare(clickedView);
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_MORE ->
-                            clickMore(clickedView);
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_REFRESH -> webView.reload();
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_EXPAND ->
-                            BottomSheetBehavior.from(bottomSheet).setState(BottomSheetBehavior.STATE_EXPANDED);
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_BROWSER -> clickBrowser();
-                    case CommentsRecyclerViewAdapter.FLAG_ACTION_CLICK_INVERT -> {
-                        //this whole thing should only be visible for SDK_INT larger than Q (29)
-                        //We first check the "new" version of dark mode, algorithmic darkening
-                        // this requires the isDarkMode thing to be true for the theme which we
-                        // have set
-                        if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            WebSettingsCompat.setAlgorithmicDarkeningAllowed(webView.getSettings(), !WebSettingsCompat.isAlgorithmicDarkeningAllowed(webView.getSettings()));
-                        } else if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-                            //I don't know why but this seems to always be true whenever we
-                            //are at or above android 10
-                            if (WebSettingsCompat.getForceDark(webView.getSettings()) == WebSettingsCompat.FORCE_DARK_ON) {
-                                WebSettingsCompat.setForceDark(webView.getSettings(), WebSettingsCompat.FORCE_DARK_OFF);
-                            } else {
-                                WebSettingsCompat.setForceDark(webView.getSettings(), WebSettingsCompat.FORCE_DARK_ON);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        if (integratedWebview) {
-            recyclerView = recyclerViewRegular;
-        } else {
-            recyclerView = recyclerViewSwipe;
-        }
-
-        layoutManager = new LinearLayoutManager(getContext());
-
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                if (integratedWebview) {
-                    //Shouldn't be necessary but once I was stuck in comments and couldn't swipe up.
-                    //this just updates a flag so there's no performance impact
-                    if (dy != 0 && callback != null) {
-                        callback.onSwitchView(false);
-                    }
-                    BottomSheetBehavior.from(bottomSheet).setDraggable(recyclerView.computeVerticalScrollOffset() == 0);
-                }
-            }
-        });
-        smoothScroller = new LinearSmoothScroller(requireContext()) {
-            public PointF computeScrollVectorForPosition(int targetPosition) {
-                return layoutManager.computeScrollVectorForPosition(targetPosition);
-            }
-
-            @Override
-            protected int getVerticalSnapPreference() {
-                return LinearSmoothScroller.SNAP_TO_START;
-            }
-
-            @Override
-            public int calculateDyToMakeVisible(View view, int snapPreference) {
-                //this is to make sure that scrollTo calls work properly
-                return super.calculateDyToMakeVisible(view, snapPreference) + topInset;
-            }
-
-        };
-
-        if (!SettingsUtils.shouldUseCommentsAnimation(getContext())) {
-            recyclerView.setItemAnimator(null);
-        }
-
-        if (!SettingsUtils.shouldUseCommentsScrollbar(getContext())) {
-            //for some reason, I could only get the scrollbars to show up when they are enabled via
-            //xml but disabling them in java worked so this is an okay solution...
-            recyclerView.setVerticalScrollBarEnabled(false);
-        }
-
-        BottomSheetBehavior.from(bottomSheet).addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View view, int newState) {
-                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-                    toggleBackPressedCallback(webView != null && webView.canGoBack());
-                } else {
-                    toggleBackPressedCallback(false);
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View view, float slideOffset) {
-                // Updating padding (of recyclerview) doesn't work because it causes incorrect scroll position for recycler.
-                // Updating scroll together with padding causes severe lags and other problems.
-                // So don't update padding at all on slide and instead just change whole view position (by translationY on recyclerView)
-                //... is something you could do but this means that the touch target of the recyclerview is not aligned with the view
-                //so we go back to the padding but instead just put a view above the recyclerview (a spacer) and change its height!
-                //... is what you could do if you were stupid! This would mean that the recyclerView starts BELOW the status bar
-                //breaking transparent status bar. Instead, the spacing needs to be _within_ the recyclerview header!
-                //NOTE: this also needs to be set in onBindViewHolder of the adapter to stay up to date if the header item
-                //should be refreshed
-                loadHeaderSpacer();
-                if (headerSpacer != null) {
-                    headerSpacer.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Math.round(topInset * slideOffset)));
-                    adapter.spacerHeight = Math.round(topInset * slideOffset);
-                }
-            }
-        });
-
-        ViewCompat.setOnApplyWindowInsetsListener(recyclerView, new OnApplyWindowInsetsListener() {
-            @NonNull
-            @Override
-            public WindowInsetsCompat onApplyWindowInsets(@NonNull View v, @NonNull WindowInsetsCompat windowInsets) {
-                Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-                topInset = insets.top;
-
-                float offset = BottomSheetBehavior.from(bottomSheet).calculateSlideOffset();
-
-                loadHeaderSpacer();
-                if (headerSpacer != null) {
-                    headerSpacer.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Math.round(topInset * offset)));
-                    adapter.spacerHeight = Math.round(topInset * offset);
-                }
-
-                int paddingBottom = insets.bottom + getResources().getDimensionPixelSize(showNavButtons ? R.dimen.comments_bottom_navigation : R.dimen.comments_bottom_standard);
-                recyclerView.setPadding(recyclerView.getPaddingLeft(), recyclerView.getPaddingTop(), recyclerView.getPaddingRight(), paddingBottom);
-
-                return windowInsets;
-            }
-        });
-        ViewUtils.requestApplyInsetsWhenAttached(recyclerView);
-
-        recyclerView.setAdapter(adapter);
-
-        recyclerView.getRecycledViewPool().setMaxRecycledViews(CommentsRecyclerViewAdapter.TYPE_COMMENT, 300);
-        recyclerView.getRecycledViewPool().setMaxRecycledViews(CommentsRecyclerViewAdapter.TYPE_COLLAPSED, 600);
-        recyclerView.getRecycledViewPool().setMaxRecycledViews(CommentsRecyclerViewAdapter.TYPE_HEADER, 1);
-    }
-
-
-    @SuppressLint({"RequiresFeature", "SetJavaScriptEnabled"})
-    @SuppressWarnings("deprecation")
-    private void initializeWebView() {
-        initializedWebView = true;
-        BottomSheetBehavior.from(bottomSheet).setDraggable(true);
-        BottomSheetBehavior.from(bottomSheet).addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                if (callback != null) {
-                    callback.onSwitchView(newState == BottomSheetBehavior.STATE_COLLAPSED);
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                //onSlide gets called when if we're just scrolling the scrollview in the sheet,
-                //we only want to start loading if we're actually sliding up the thing!
-                if (!startedLoading && slideOffset < 0.9999) {
-                    startedLoading = true;
-                    loadUrl(story.url);
-                }
-            }
-        });
-
-        //This is because we are now for sure not using swipeRefresh
-        try {
-            ((FrameLayout) swipeRefreshLayout.getParent()).removeView(swipeRefreshLayout);
-        } catch (Exception e) {
-            //this will crash if we have already done this, which is fine
-        }
-
-        if (blockAds && TextUtils.isEmpty(Utils.adservers)) {
-            Utils.loadAdservers(getResources());
-        }
-
-        webView.setWebViewClient(new MyWebViewClient());
-        if (preloadWebview.equals("always") || (preloadWebview.equals("onlywifi") && Utils.isOnWiFi(requireContext())) || showWebsite || (NitterGetter.isConvertibleToNitter(story.url) && SettingsUtils.shouldUseLinkPreviewX(getContext()))) {
-            loadUrl(story.url);
-            startedLoading = true;
-        }
-
-        webView.getSettings().setBuiltInZoomControls(true);
-        webView.getSettings().setDisplayZoomControls(false);
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setDomStorageEnabled(true);
-        webView.getSettings().setGeolocationEnabled(true);
-        webView.getSettings().setDatabaseEnabled(true);
-        webView.getSettings().setUseWideViewPort(true);
-        webView.getSettings().setLoadWithOverviewMode(true);
-
-        webView.setDownloadListener(new DownloadListener() {
-            @Override
-            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
-
-                if (!TextUtils.isEmpty(mimetype) && mimetype.equals(PDF_MIME_TYPE) && (url.startsWith("http://") || url.startsWith("https://"))) {
-                    downloadPdf(url, contentDisposition, mimetype, webView.getContext());
-                } else {
-                    showDownloadButton(url, contentDisposition, mimetype);
-                }
-            }
-        });
-
-        webView.setWebChromeClient(new WebChromeClient() {
-            public void onProgressChanged(WebView view, int progress) {
-                if (progress < 100 && progressIndicator.getVisibility() == View.GONE) {
-                    progressIndicator.setVisibility(View.VISIBLE);
-                }
-
-                progressIndicator.setProgress(progress);
-                if (progress == 100) {
-                    progressIndicator.setVisibility(View.GONE);
-                }
-            }
-        });
-
-        if (matchWebviewTheme && ThemeUtils.isDarkMode(getContext())) {
-            if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                WebSettingsCompat.setAlgorithmicDarkeningAllowed(webView.getSettings(), true);
-            } else if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-                WebSettingsCompat.setForceDark(webView.getSettings(), WebSettingsCompat.FORCE_DARK_ON);
-            }
-        }
-
-        webView.setBackgroundColor(Color.TRANSPARENT);
-
-        webViewBackdrop.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (webViewBackdrop != null) {
-                    webViewBackdrop.animate()
-                            .alpha(1f)
-                            .setDuration(300)
-                            .start();
-                }
-
-            }
-        }, 2000); // Start the animation after 2 seconds
-    }
-
-    private void loadUrl(String url) {
-        loadUrl(url, null);
-    }
-
-    private void loadUrl(String url, @Nullable String pdfFilePath) {
-        if (webView == null) {
-            return;
-        }
-        if (url.equals(PDF_LOADER_URL)) {
-            PdfAndroidJavascriptBridge pdfAndroidJavascriptBridge = new PdfAndroidJavascriptBridge(pdfFilePath, new PdfAndroidJavascriptBridge.Callbacks() {
-                @Override
-                public void onFailure() {
-
-                }
-
-                @Override
-                public void onLoad() {
-
-                }
-            });
-
-            webView.addJavascriptInterface(pdfAndroidJavascriptBridge, "PdfAndroidJavascriptBridge");
-            webView.setInitialScale(100);
-            webView.getSettings().setLoadWithOverviewMode(true);
-            webView.getSettings().setUseWideViewPort(true);
-        }
-
-        if (NitterGetter.isConvertibleToNitter(url) && SettingsUtils.shouldRedirectNitter(getContext())) {
-            url = NitterGetter.convertToNitterUrl(url);
-        }
-
-        webView.loadUrl(url);
-    }
-
-    private void downloadPdf(String url, String contentDisposition, String mimetype, Context ctx) {
-        if (ctx == null) {
-            return;
-        }
-        FileDownloader fileDownloader = new FileDownloader(ctx);
-        Toast.makeText(ctx, "Loading PDF...", Toast.LENGTH_LONG).show();
-        fileDownloader.downloadFile(url, PDF_MIME_TYPE, new FileDownloader.FileDownloaderCallback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                showDownloadButton(url, contentDisposition, mimetype);
-            }
-
-            @Override
-            public void onSuccess(String filePath) {
-                loadUrl(PDF_LOADER_URL, filePath);
-            }
-        });
-
-    }
-
-    private void showDownloadButton(String url, String contentDisposition, String mimetype) {
-        if (webView != null && downloadButton != null) {
-            webView.setVisibility(View.GONE);
-            downloadButton.setVisibility(View.VISIBLE);
-            downloadButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //just download via notification as usual
-                    try {
-                        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-
-                        request.allowScanningByMediaScanner();
-                        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, URLUtil.guessFileName(url, contentDisposition, mimetype));
-                        DownloadManager dm = (DownloadManager) view.getContext().getSystemService(DOWNLOAD_SERVICE);
-                        dm.enqueue(request);
-                        Toast.makeText(getContext(), "Downloading...", Toast.LENGTH_LONG).show();
-                    } catch (Exception e) {
-                        Toast.makeText(getContext(), "Failed to download, opening in browser", Toast.LENGTH_LONG).show();
-                        Utils.launchInExternalBrowser(getActivity(), url);
-                    }
-
-                }
-            });
-        }
-    }
 
     @Override
     public void onStart() {
@@ -935,17 +434,6 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         }
     }
 
-    private void loadHeaderSpacer() {
-        if (recyclerView == null) {
-            return;
-        }
-
-        RecyclerView.ViewHolder viewHolder = recyclerView.findViewHolderForAdapterPosition(0);
-        if (viewHolder instanceof CommentsRecyclerViewAdapter.HeaderViewHolder) {
-            headerSpacer = ((CommentsRecyclerViewAdapter.HeaderViewHolder) viewHolder).spacer;
-        }
-    }
-
     private CommentsScrollProgress recordScrollProgress() {
         CommentsScrollProgress scrollProgress = new CommentsScrollProgress();
 
@@ -967,21 +455,12 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
         return scrollProgress;
     }
 
-    private void restoreScrollProgress(CommentsScrollProgress scrollProgress) {
-        for (Comment c : comments) {
-            if (c.id == scrollProgress.topCommentId) {
-                layoutManager.scrollToPositionWithOffset(comments.indexOf(c), scrollProgress.topCommentOffset);
-            }
-            c.expanded = !scrollProgress.collapsedIDs.contains(c.id);
-        }
-    }
-
     public void restartWebView() {
         CommentsUtils.destroyWebView(webViewContainer, webView);
 
         webView = new WebView(getContext());
         webViewContainer.addView(webView);
-        initializeWebView();
+        com.simon.harmonichackernews.view.ViewUtils.initializeWebView(this);
     }
 
     @Override
@@ -1010,220 +489,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
 
     public void refreshComments() {
         swipeRefreshLayout.setRefreshing(true);
-        loadStoryAndComments(adapter.story.id, null);
-    }
-
-    private void loadStoryAndComments(final int id, final String oldCachedResponse) {
-        String url = "https://hn.algolia.com/api/v1/items/" + id;
-        lastLoaded = System.currentTimeMillis();
-
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                response -> {
-                    if (TextUtils.isEmpty(oldCachedResponse) || !oldCachedResponse.equals(response)) {
-                        handleJsonResponse(id, response, true, oldCachedResponse == null, false);
-                    }
-                    swipeRefreshLayout.setRefreshing(false);
-                }, error -> {
-            error.printStackTrace();
-
-            if (error instanceof com.android.volley.TimeoutError) {
-                adapter.loadingFailedServerError = true;
-            }
-
-            if (error.networkResponse != null && error.networkResponse.statusCode == 404) {
-                adapter.loadingFailedServerError = true;
-            }
-
-            adapter.loadingFailed = true;
-            adapter.notifyItemChanged(0);
-            swipeRefreshLayout.setRefreshing(false);
-        });
-
-        if (story.pollOptions != null) {
-            loadPollOptions();
-        }
-
-        if (ArxivAbstractGetter.isValidArxivUrl(story.url) && SettingsUtils.shouldUseLinkPreviewArxiv(getContext())) {
-            ArxivAbstractGetter.getAbstract(story.url, getContext(), new ArxivAbstractGetter.GetterCallback() {
-                @Override
-                public void onSuccess(ArxivInfo arxivInfo) {
-                    story.arxivInfo = arxivInfo;
-                    if (adapter != null) {
-                        adapter.notifyItemChanged(0);
-                    }
-                }
-
-                @Override
-                public void onFailure(String reason) {
-                    //no-op
-                }
-            });
-        } else if (GitHubInfoGetter.isValidGitHubUrl(story.url) && SettingsUtils.shouldUseLinkPreviewGithub(getContext())) {
-            GitHubInfoGetter.getInfo(story.url, getContext(), new GitHubInfoGetter.GetterCallback() {
-                @Override
-                public void onSuccess(RepoInfo repoInfo) {
-                    story.repoInfo = repoInfo;
-                    if (adapter != null) {
-                        adapter.notifyItemChanged(0);
-                    }
-                }
-
-                @Override
-                public void onFailure(String reason) {
-                    //no op
-                }
-            });
-        } else if (WikipediaGetter.isValidWikipediaUrl(story.url) && SettingsUtils.shouldUseLinkPreviewWikipedia(getContext())) {
-            WikipediaGetter.getInfo(story.url, getContext(), new WikipediaGetter.GetterCallback() {
-                @Override
-                public void onSuccess(WikipediaInfo wikipediaInfo) {
-                    story.wikiInfo = wikipediaInfo;
-                    if (adapter != null) {
-                        adapter.notifyItemChanged(0);
-                    }
-                }
-
-                @Override
-                public void onFailure(String reason) {
-                    //no op
-                }
-            });
-        }
-
-        stringRequest.setTag(requestTag);
-        stringRequest.setRetryPolicy(new DefaultRetryPolicy(
-                15000,
-                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-
-        queue.add(stringRequest);
-    }
-
-    private void loadPollOptions() {
-        story.pollOptionArrayList = new ArrayList<>();
-        for (int optionId : story.pollOptions) {
-            PollOption pollOption = new PollOption();
-            pollOption.loaded = false;
-            pollOption.id = optionId;
-            story.pollOptionArrayList.add(pollOption);
-        }
-
-        for (int optionId : story.pollOptions) {
-            String url = "https://hacker-news.firebaseio.com/v0/item/" + optionId + ".json";
-
-            StringRequest stringRequest = new StringRequest(Request.Method.GET, url, response -> {
-                try {
-                    for (int i = 0; i < story.pollOptionArrayList.size(); i++) {
-                        PollOption pollOption = story.pollOptionArrayList.get(i);
-
-                        if (pollOption.id == optionId) {
-                            pollOption.loaded = true;
-
-                            JSONObject jsonObject = new JSONObject(response);
-                            pollOption.points = jsonObject.getInt("score");
-                            pollOption.text = JSONParser.preprocessHtml(jsonObject.getString("text"));
-
-                            adapter.notifyItemChanged(0);
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }, error -> {
-
-            });
-
-            stringRequest.setTag(requestTag);
-            queue.add(stringRequest);
-        }
-    }
-
-    private void handleJsonResponse(final int id, final String response, final boolean cache, final boolean forceHeaderRefresh, boolean restoreScroll) {
-        int oldCommentCount = comments.size();
-
-        // This is what we get if the Algolia API has not indexed the post,
-        // we should attempt to show the user an option to switch API:s in this
-        // server error case
-        if (response.equals(JSONParser.ALGOLIA_ERROR_STRING)) {
-            adapter.loadingFailed = true;
-            adapter.loadingFailedServerError = true;
-            adapter.notifyItemChanged(0);
-            swipeRefreshLayout.setRefreshing(false);
-        }
-
-        try {
-            JSONObject jsonObject = new JSONObject(response);
-            story.parentId = jsonObject.optInt("parent_id");
-            JSONArray children = jsonObject.getJSONArray("children");
-
-            //we run the defauly sorting
-            boolean addedNewComment = false;
-            for (int i = 0; i < children.length(); i++) {
-                boolean added = JSONParser.readChildAndParseSubchilds(children.getJSONObject(i), comments, adapter, 0, story.kids);
-                if (added) {
-                    addedNewComment = true;
-                }
-            }
-            //if non default, do full refresh after the sorting below!
-            if (addedNewComment && !SettingsUtils.getPreferredCommentSorting(getContext()).equals("Default")) {
-                adapter.notifyItemRangeChanged(1, comments.size());
-            }
-
-            //and then perhaps apply an updated sorting
-            CommentSorter.sort(getContext(), comments);
-
-            boolean storyChanged = JSONParser.updateStoryInformation(story, jsonObject, forceHeaderRefresh, oldCommentCount, comments.size());
-            if (storyChanged || forceHeaderRefresh) {
-                adapter.notifyItemChanged(0);
-            }
-
-            integratedWebview = prefIntegratedWebview && story.isLink;
-
-            if (integratedWebview && !initializedWebView) {
-                //it's the first time, so we need to re-initialize the recyclerview too
-                initializeWebView();
-                initializeRecyclerView();
-            }
-
-            if (SettingsUtils.shouldCollapseTopLevel(getContext())) {
-                for (Comment c : comments) {
-                    if (c.depth == 0) {
-                        c.expanded = false;
-                    }
-                }
-            }
-
-            adapter.loadingFailed = false;
-            adapter.loadingFailedServerError = false;
-
-            //Seems like loading went well, lets cache the result
-            if (cache) {
-                Utils.cacheStory(getContext(), id, response);
-            } else if (restoreScroll) {
-                //if we're not caching the result, this means we just loaded an old cache.
-                //let's see if we can recover the scroll position.
-                if (MainActivity.commentsScrollProgresses != null && !MainActivity.commentsScrollProgresses.isEmpty()) {
-                    //we check all of the caches to see if one has the same story ID
-                    for (CommentsScrollProgress scrollProgress : MainActivity.commentsScrollProgresses) {
-                        if (scrollProgress.storyId == story.id) {
-                            //jackpot! Let's restore the state
-                            restoreScrollProgress(scrollProgress);
-                        }
-                    }
-                }
-            }
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-            //Show some error, remove things?
-            adapter.loadingFailed = true;
-            adapter.loadingFailedServerError = false;
-            adapter.notifyItemChanged(0);
-            swipeRefreshLayout.setRefreshing(false);
-        }
-
-        adapter.commentsLoaded = true;
-        com.simon.harmonichackernews.view.ViewUtils.updateNavigationVisibility(comments, scrollNavigation, showNavButtons);
+        CommentsUtils.loadStoryAndComments(this, adapter.story.id, null);
     }
 
     public void clickBrowser() {
@@ -1419,7 +685,7 @@ public class CommentsFragment extends Fragment implements CommentsRecyclerViewAd
 
             if (BottomSheetBehavior.from(bottomSheet).getState() == BottomSheetBehavior.STATE_COLLAPSED) {
                 //if we are at the webview and we just loaded, recheck the canGoBack status
-                toggleBackPressedCallback(webView != null && webView.canGoBack());
+                com.simon.harmonichackernews.view.ViewUtils.toggleBackPressedCallback(CommentsFragment.this, webView != null && webView.canGoBack());
             }
 
 
