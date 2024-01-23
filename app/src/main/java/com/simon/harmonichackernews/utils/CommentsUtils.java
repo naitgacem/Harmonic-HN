@@ -1,10 +1,16 @@
 package com.simon.harmonichackernews.utils;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.webkit.WebView;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
-import androidx.core.util.Pair;
+import androidx.core.content.ContextCompat;
 
+import com.simon.harmonichackernews.CommentsFragment;
 import com.simon.harmonichackernews.R;
+import com.simon.harmonichackernews.adapters.CommentsRecyclerViewAdapter;
 import com.simon.harmonichackernews.data.Comment;
 import com.simon.harmonichackernews.data.Story;
 
@@ -29,28 +35,29 @@ public class CommentsUtils {
     public final static String EXTRA_FORWARD = "com.simon.harmonichackernews.EXTRA_FORWARD";
     public final static String EXTRA_SHOW_WEBSITE = "com.simon.harmonichackernews.EXTRA_SHOW_WEBSITE";
 
-    public static List<Pair<String, Integer>> getPossibleActions(Comment comment) {
-        List<Pair<String, Integer>> itemsList = new ArrayList<>();
+    public static List<Triplet<String, Integer, CommentAction>> getPossibleActions(Comment comment) {
+        List<Triplet<String, Integer, CommentAction>> itemsList = new ArrayList<>();
 
-        itemsList.add(new Pair<>("View user (" + comment.by + ")", R.drawable.ic_action_user));
-        itemsList.add(new Pair<>("Share comment link", R.drawable.ic_action_share));
-        itemsList.add(new Pair<>("Copy text", R.drawable.ic_action_copy));
-        itemsList.add(new Pair<>("Select text", R.drawable.ic_action_select));
-        itemsList.add(new Pair<>("Vote up", R.drawable.ic_action_thumbs_up));
-        itemsList.add(new Pair<>("Unvote", R.drawable.ic_action_thumbs));
-        itemsList.add(new Pair<>("Vote down", R.drawable.ic_action_thumb_down));
-        itemsList.add(new Pair<>("Bookmark", R.drawable.ic_action_bookmark_border));
+        itemsList.add(new Triplet<>("View user (" + comment.by + ")", R.drawable.ic_action_user, CommentAction.VIEW_USER));
+        itemsList.add(new Triplet<>("Share comment link", R.drawable.ic_action_share, CommentAction.SHARE_COMMENT_LINK));
+        itemsList.add(new Triplet<>("Copy text", R.drawable.ic_action_copy, CommentAction.COPY_TEXT));
+        itemsList.add(new Triplet<>("Select text", R.drawable.ic_action_select, CommentAction.SELECT_TEXT));
+        itemsList.add(new Triplet<>("Vote up", R.drawable.ic_action_thumbs_up, CommentAction.VOTE_UP));
+        itemsList.add(new Triplet<>("Unvote", R.drawable.ic_action_thumbs, CommentAction.UN_VOTE));
+        itemsList.add(new Triplet<>("Vote down", R.drawable.ic_action_thumb_down, CommentAction.VOTE_DOWN));
+        itemsList.add(new Triplet<>("Bookmark", R.drawable.ic_action_bookmark_border, CommentAction.BOOKMARK));
         if(comment.parentComment != null){
-            itemsList.add(new Pair<>("Parent", R.drawable.ic_action_arrow_up));
+            itemsList.add(new Triplet<>("Parent", R.drawable.ic_action_arrow_up, CommentAction.PARENT_COMMENT));
         }
         if(comment.rootComment != null){
-            itemsList.add(new Pair<>("Root", R.drawable.ic_action_arrow_up));
+            itemsList.add(new Triplet<>("Root", R.drawable.ic_action_arrow_up, CommentAction.ROOT_COMMENT));
         }
-        if(Utils.timeInSecondsMoreThanTwoWeeksAgo(comment.time)){
-            new Pair<>("Reply", R.drawable.ic_action_reply);
+        if(!Utils.timeInSecondsMoreThanTwoWeeksAgo(comment.time)){
+            itemsList.add(new Triplet<>("Reply", R.drawable.ic_action_reply, CommentAction.REPLY));
         }
         return itemsList;
     }
+
 
     public static void fillStoryFromBundle(Story story, Bundle bundle) {
         story.title = bundle.getString(EXTRA_TITLE);
@@ -68,5 +75,85 @@ public class CommentsUtils {
         story.isLink = bundle.getBoolean(EXTRA_IS_LINK, true);
         story.isComment = bundle.getBoolean(EXTRA_IS_COMMENT, false);
         story.loaded = true;
+    }
+
+    public static void initAdapter(CommentsFragment commentsFragment, CommentsRecyclerViewAdapter adapter, LinearLayout bottomSheet, List<Comment> comments, FrameLayout webViewContainer) {
+        if (adapter != null) {
+            Context ctx = commentsFragment.requireContext();
+            boolean updateHeader = false;
+            boolean updateComments = false;
+
+            if (adapter.collapseParent != SettingsUtils.shouldCollapseParent(ctx)) {
+                adapter.collapseParent = !adapter.collapseParent;
+                updateComments = true;
+            }
+
+            if (adapter.showThumbnail != SettingsUtils.shouldShowThumbnails(ctx)) {
+                adapter.showThumbnail = !adapter.showThumbnail;
+                updateHeader = true;
+            }
+
+            if (adapter.preferredTextSize != SettingsUtils.getPreferredCommentTextSize(ctx)) {
+                adapter.preferredTextSize = SettingsUtils.getPreferredCommentTextSize(ctx);
+                updateHeader = true;
+                updateComments = true;
+            }
+
+            if (adapter.monochromeCommentDepthIndicators != SettingsUtils.shouldUseMonochromeCommentDepthIndicators(ctx)) {
+                adapter.monochromeCommentDepthIndicators = SettingsUtils.shouldUseMonochromeCommentDepthIndicators(ctx);
+                updateComments = true;
+            }
+
+            if (!adapter.font.equals(SettingsUtils.getPreferredFont(ctx))) {
+                adapter.font = SettingsUtils.getPreferredFont(ctx);
+                updateHeader = true;
+                updateComments = true;
+            }
+
+            if (adapter.showTopLevelDepthIndicator != SettingsUtils.shouldShowTopLevelDepthIndicator(ctx)) {
+                adapter.showTopLevelDepthIndicator = SettingsUtils.shouldShowTopLevelDepthIndicator(ctx);
+                updateComments = true;
+            }
+
+            if (adapter.swapLongPressTap != SettingsUtils.shouldSwapCommentLongPressTap(ctx)) {
+                adapter.swapLongPressTap = SettingsUtils.shouldSwapCommentLongPressTap(ctx);
+            }
+
+            if (!adapter.theme.equals(ThemeUtils.getPreferredTheme(ctx))) {
+                adapter.theme = ThemeUtils.getPreferredTheme(ctx);
+                updateHeader = true;
+                updateComments = true;
+
+                // darkThemeActive might change because the system changed from day to night mode.
+                // In that case, we'll need to update the sheet and webview background color since
+                // that will have changed too.
+                if (bottomSheet != null) {
+                    bottomSheet.setBackgroundColor(ContextCompat.getColor(ctx, ThemeUtils.getBackgroundColorResource(ctx)));
+                }
+                if (webViewContainer != null) {
+                    webViewContainer.setBackgroundColor(ContextCompat.getColor(ctx, ThemeUtils.getBackgroundColorResource(ctx)));
+                }
+            }
+            if (updateHeader) {
+                adapter.notifyItemChanged(0);
+            }
+            if (updateComments) {
+                adapter.notifyItemRangeChanged(1, comments.size());
+            }
+        }
+    }
+
+    public static void destroyWebView(FrameLayout webViewContainer, WebView webView) {
+        //nuclear
+        if (webView != null) {
+            webViewContainer.removeAllViews();
+            webView.clearHistory();
+            webView.clearCache(true);
+            webView.onPause();
+            webView.removeAllViews();
+            webView.destroyDrawingCache();
+            webView.pauseTimers();
+            webView.destroy();
+        }
     }
 }
