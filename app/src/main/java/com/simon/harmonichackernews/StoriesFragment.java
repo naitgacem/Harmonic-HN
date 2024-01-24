@@ -5,8 +5,10 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,19 +17,19 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.PathInterpolator;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.graphics.Insets;
-import androidx.core.view.OnApplyWindowInsetsListener;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.appcompat.widget.TooltipCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentResultListener;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -38,6 +40,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.simon.harmonichackernews.adapters.StoryRecyclerViewAdapter;
 import com.simon.harmonichackernews.data.Bookmark;
 import com.simon.harmonichackernews.data.Story;
+import com.simon.harmonichackernews.databinding.FragmentStoriesBinding;
 import com.simon.harmonichackernews.network.JSONParser;
 import com.simon.harmonichackernews.network.NetworkComponent;
 import com.simon.harmonichackernews.utils.AccountUtils;
@@ -55,19 +58,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class StoriesFragment extends Fragment {
-
+    public final static String[] hnUrls = new String[]{Utils.URL_TOP, Utils.URL_NEW, Utils.URL_BEST, Utils.URL_ASK, Utils.URL_SHOW, Utils.URL_JOBS};
+    private final static long CLICK_INTERVAL = 350;
+    private final String TAG = "StoriesFragment:";
+    private final Object requestTag = new Object();
+    FragmentStoriesBinding binding;
+    long lastLoaded = 0;
+    long lastClick = 0;
     private StoryClickListener storyClickListener;
     private SwipeRefreshLayout swipeRefreshLayout;
     private LinearLayout updateContainer;
     private RecyclerView recyclerView;
-
     private StoryRecyclerViewAdapter adapter;
     private List<Story> stories;
     private RequestQueue queue;
-    private final Object requestTag = new Object();
     private LinearLayoutManager linearLayoutManager;
     private Set<Integer> clickedIds;
     private ArrayList<String> filterWords;
@@ -75,72 +83,49 @@ public class StoriesFragment extends Fragment {
     private ArrayList<String> filterDomains;
     private boolean hideJobs, alwaysOpenComments, hideClicked;
     private String lastSearch;
-
+    private boolean didSearch = false;
     private int loadedTo = 0;
 
-    public final static String[] hnUrls = new String[]{Utils.URL_TOP, Utils.URL_NEW, Utils.URL_BEST, Utils.URL_ASK, Utils.URL_SHOW, Utils.URL_JOBS};
-
-    long lastLoaded = 0;
-    long lastClick = 0;
-    private final static long CLICK_INTERVAL = 350;
-
-    private int topInset = 0;
-
     public StoriesFragment() {
-        super(R.layout.fragment_stories);
+        super();
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         clickedIds = SettingsUtils.readIntSetFromSharedPreferences(requireContext(), Utils.KEY_SHARED_PREFERENCES_CLICKED_IDS);
-
-        return super.onCreateView(inflater, container, savedInstanceState);
+        binding = FragmentStoriesBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        recyclerView = view.findViewById(R.id.stories_recyclerview);
-        swipeRefreshLayout = view.findViewById(R.id.stories_swipe_refresh);
-        updateContainer = view.findViewById(R.id.stories_update_container);
-        Button updateButton = view.findViewById(R.id.stories_update_button);
-
-        swipeRefreshLayout.setOnRefreshListener(this::attemptRefresh);
-        ViewUtils.setUpSwipeRefreshWithStatusBarOffset(swipeRefreshLayout);
-
+        stories = new ArrayList<>();
+        setupAdapter();
+        setupHeader();
+        recyclerView = binding.storiesRecyclerview;
+        swipeRefreshLayout = binding.storiesSwipeRefresh;
+        updateContainer = binding.storiesUpdateContainer;
         linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
 
-        stories = new ArrayList<>();
-        setupAdapter();
         recyclerView.setAdapter(adapter);
 
-        ViewCompat.setOnApplyWindowInsetsListener(view, new OnApplyWindowInsetsListener() {
-            @NonNull
-            @Override
-            public WindowInsetsCompat onApplyWindowInsets(@NonNull View v, @NonNull WindowInsetsCompat windowInsets) {
-                Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
 
-                CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) updateContainer.getLayoutParams();
-                params.bottomMargin = insets.bottom + Utils.pxFromDpInt(getResources(), 8);
-                updateContainer.setLayoutParams(params);
+        binding.storiesHeaderSearchButton.setOnClickListener(this::onClickSearch);
 
-                topInset = insets.top;
 
-                return windowInsets;
-            }
-        });
+        swipeRefreshLayout.setOnRefreshListener(this::attemptRefresh);
+        ViewUtils.setUpSwipeRefreshWithStatusBarOffset(swipeRefreshLayout);
         ViewUtils.requestApplyInsetsWhenAttached(view);
 
-        updateButton.setOnClickListener((v) -> {
+        binding.storiesUpdateButton.setOnClickListener((v) -> {
             attemptRefresh();
             recyclerView.smoothScrollToPosition(0);
         });
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-
             int lastVisibleItem;
 
             @Override
@@ -151,17 +136,15 @@ public class StoriesFragment extends Fragment {
                     lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition();
 
                     int visibleThreshold = 17;
-                    for (int i = loadedTo + 1; i < Math.min(lastVisibleItem + visibleThreshold, stories.size()); i++) {
+                    for (int i = loadedTo; i < Math.min(lastVisibleItem + visibleThreshold, stories.size()); i++) {
                         loadedTo = i;
-
                         loadStory(stories.get(i), 0);
                     }
                 }
             }
         });
-
         queue = NetworkComponent.getRequestQueueInstance(requireContext());
-        stories.add(new Story());
+
         attemptRefresh();
 
         StoryUpdate.setStoryUpdatedListener(new StoryUpdate.StoryUpdateListener() {
@@ -185,6 +168,77 @@ public class StoriesFragment extends Fragment {
                 }
             }
         });
+        if (getActivity() instanceof MainActivity) {
+            storyClickListener = (MainActivity) getActivity();
+        }
+    }
+
+    private void handleBackPress() {
+        var onBackPressedCallback = new OnBackPressedCallback(false){
+            @Override
+            public void handleOnBackPressed() {
+                attemptRefresh();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
+    }
+
+    private void onClickSearch(View v) {
+        getParentFragmentManager().setFragmentResultListener("search_query", this, new FragmentResultListener() {
+            @Override
+            public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle bundle) {
+                String result = bundle.getString("query_term");
+                search(result);
+            }
+        });
+
+        getParentFragmentManager().beginTransaction().setReorderingAllowed(true).add(R.id.main_fragment_stories_container, SearchFragment.class, null).addToBackStack("search").commit();
+
+    }
+
+    private void setupHeader() {
+        var ctx = requireContext();
+        //--------------------------------------------------------------------------------------------//
+        // SETUP THE HEADER HEIGHT
+        if(!SettingsUtils.shouldUseCompactHeader(getContext())){
+            TypedValue typedValue = new TypedValue();
+            Resources.Theme theme = ctx.getTheme();
+            theme.resolveAttribute(com.google.android.material.R.attr.collapsingToolbarLayoutMediumSize,typedValue, true);
+
+            var params = binding.topBar.getLayoutParams();
+            params.height = TypedValue.complexToDimensionPixelSize(typedValue.data, getResources().getDisplayMetrics());
+        }
+        //--------------------------------------------------------------------------------------------//
+        // SETUP THE SPINNER
+        var sortingOptions = ctx.getResources().getStringArray(R.array.sorting_options);
+        var typeAdapterList = new ArrayList<CharSequence>(Arrays.asList(sortingOptions));
+        var typeAdapter = new ArrayAdapter<>(ctx, R.layout.spinner_top_layout, R.id.selection_dropdown_item_textview, typeAdapterList);
+        typeAdapter.setDropDownViewResource(R.layout.spinner_item_layout);
+        Spinner typeSpinner = binding.storiesHeaderSpinner;
+        typeSpinner.setAdapter(typeAdapter);
+        typeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if (i != adapter.type) {
+                    adapter.type = i;
+                    attemptRefresh();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+        binding.storiesHeaderSpinner.setSelection(getPreferredTypeIndex());
+        //---------------------------------------------------------------------------------------------//
+        // SETUP MORE BUTTON
+        binding.storiesHeaderMore.setOnClickListener(this::moreClick);
+        //--------------------------------------------------------------------------------------------//
+        //SETUP TOOLTIPS
+        TooltipCompat.setTooltipText(binding.storiesHeaderMore, "More");
+        TooltipCompat.setTooltipText(binding.storiesHeaderSearchButton, "Search stories");
+
     }
 
     private int getPreferredTypeIndex() {
@@ -194,19 +248,19 @@ public class StoriesFragment extends Fragment {
     }
 
     private void setupAdapter() {
-        adapter = new StoryRecyclerViewAdapter(stories,
+        adapter = new StoryRecyclerViewAdapter(
+                stories,
                 SettingsUtils.shouldShowPoints(getContext()),
                 SettingsUtils.shouldShowCommentsCount(getContext()),
                 SettingsUtils.shouldUseCompactView(getContext()),
                 SettingsUtils.shouldShowThumbnails(getContext()),
                 SettingsUtils.shouldShowIndex(getContext()),
-                SettingsUtils.shouldUseCompactHeader(getContext()),
                 SettingsUtils.shouldUseLeftAlign(getContext()),
                 SettingsUtils.getPreferredHotness(getContext()),
                 SettingsUtils.getPreferredFaviconProvider(getContext()),
                 null,
                 getPreferredTypeIndex()
-                );
+        );
 
         adapter.setOnLinkClickListener(position -> {
             if (position == RecyclerView.NO_POSITION) {
@@ -247,31 +301,8 @@ public class StoriesFragment extends Fragment {
                 adapter.notifyItemChanged(position);
             }
         });
-
         adapter.setOnCommentClickListener(this::clickedComments);
         adapter.setOnRefreshListener(this::attemptRefresh);
-        adapter.setOnMoreClickListener(this::moreClick);
-
-        adapter.setOnTypeClickListener(index -> {
-            if (index != adapter.type) {
-                adapter.type = index;
-                attemptRefresh();
-            }
-        });
-
-        adapter.setSearchListener(new StoryRecyclerViewAdapter.SearchListener() {
-            @Override
-            public void onQueryTextSubmit(String query) {
-                search(query);
-
-            }
-
-            @Override
-            public void onSearchStatusChanged() {
-                updateSearchStatus();
-            }
-        });
-
         adapter.setOnLongClickListener(new StoryRecyclerViewAdapter.LongClickCoordinateListener() {
             @Override
             public boolean onLongClick(View v, int position, int x, int y) {
@@ -300,36 +331,12 @@ public class StoriesFragment extends Fragment {
                         return true;
                     }
                 });
-
-                try {
-                    // Reflection code to force show the popup at x,y position
-                    java.lang.reflect.Field fieldPopup = popupMenu.getClass().getDeclaredField("mPopup");
-                    fieldPopup.setAccessible(true);
-                    Object menuPopupHelper = fieldPopup.get(popupMenu);
-
-                    //the reason for the -10 - height/3 thing is so match the popup location better
-                    //with the press location - for some reason this is necessary.
-                    int targetX = x - Utils.pxFromDpInt(getResources(), 56);
-                    int targetY = y - topInset - Utils.pxFromDpInt(getResources(), 10) - v.getHeight()/3;
-
-                    menuPopupHelper.getClass().getDeclaredMethod("show", int.class, int.class).invoke(menuPopupHelper, targetX, targetY);
-                } catch (Exception e) {
-                    // In case reflection fails, show the popup the usual way
-                    popupMenu.show();
-                }
-
+                popupMenu.show();
                 return false;
             }
         });
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (getActivity() instanceof MainActivity) {
-            storyClickListener = (MainActivity) getActivity();
-        }
-    }
 
     @Override
     public void onResume() {
@@ -345,7 +352,7 @@ public class StoriesFragment extends Fragment {
         long timeDiff = System.currentTimeMillis() - lastLoaded;
 
         // if more than 1 hr
-        if (timeDiff > 1000*60*60 && !adapter.searching && adapter.type != SettingsUtils.getBookmarksIndex(getResources()) && !currentTypeIsAlgolia()) {
+        if (timeDiff > 1000 * 60 * 60 && !adapter.searching && adapter.type != SettingsUtils.getBookmarksIndex(getResources()) && !currentTypeIsAlgolia()) {
             showUpdateButton();
         }
 
@@ -385,11 +392,6 @@ public class StoriesFragment extends Fragment {
             adapter.notifyItemRangeChanged(0, stories.size());
         }
 
-        if (adapter.compactHeader != SettingsUtils.shouldUseCompactHeader(getContext())) {
-            adapter.compactHeader = SettingsUtils.shouldUseCompactHeader(getContext());
-            adapter.notifyItemChanged(0);
-        }
-
         if (adapter.hotness != SettingsUtils.getPreferredHotness(getContext())) {
             adapter.hotness = SettingsUtils.getPreferredHotness(getContext());
             adapter.notifyItemRangeChanged(1, stories.size());
@@ -400,11 +402,10 @@ public class StoriesFragment extends Fragment {
             attemptRefresh();
         }
 
-        if (adapter.faviconProvider != SettingsUtils.getPreferredFaviconProvider(getContext())) {
+        if (!Objects.equals(adapter.faviconProvider, SettingsUtils.getPreferredFaviconProvider(getContext()))) {
             adapter.faviconProvider = SettingsUtils.getPreferredFaviconProvider(getContext());
             adapter.notifyItemRangeChanged(1, stories.size());
         }
-
     }
 
     @Override
@@ -419,6 +420,7 @@ public class StoriesFragment extends Fragment {
         if (queue != null) {
             queue.cancelAll(requestTag);
         }
+        binding = null;
     }
 
     private void clickedComments(int position) {
@@ -452,60 +454,59 @@ public class StoriesFragment extends Fragment {
 
         String url = "https://hacker-news.firebaseio.com/v0/item/" + story.id + ".json";
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                response -> {
-                    try {
-                        int index = stories.indexOf(story);
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, response -> {
+            try {
+                int index = stories.indexOf(story);
 
-                        if (!JSONParser.updateStoryWithHNJson(response, story)) {
-                            stories.remove(story);
-                            adapter.notifyItemRemoved(index);
-                            loadedTo = Math.max(0, loadedTo - 1);
-                            return;
-                        }
+                if (!JSONParser.updateStoryWithHNJson(response, story)) {
+                    stories.remove(story);
+                    adapter.notifyItemRemoved(index);
+                    loadedTo = Math.max(0, loadedTo - 1);
+                    return;
+                }
 
-                        //lets check if we should remove the post because of filter
-                        for (String phrase : filterWords) {
-                            if (story.title.toLowerCase().contains(phrase.toLowerCase())) {
-                                stories.remove(story);
-                                adapter.notifyItemRemoved(index);
-                                loadedTo = Math.max(0, loadedTo - 1);
-                                return;
-                            }
-                        }
-                        // or domain name
-                        for (String phrase : filterDomains) {
-                            if (story.url.toLowerCase().contains(phrase.toLowerCase())) {
-                                stories.remove(story);
-                                adapter.notifyItemRemoved(index);
-                                loadedTo = Math.max(0, loadedTo - 1);
-                                return;
-                            }
-                        }
-
-                        //or because it's a job
-                        if (hideJobs && adapter.type != SettingsUtils.getJobsIndex(getResources()) && (story.isJob || story.by.equals("whoishiring"))) {
-                            stories.remove(story);
-                            adapter.notifyItemRemoved(index);
-                            loadedTo = Math.max(0, loadedTo - 1);
-                            return;
-                        }
-
-                        //or because it's less than the minimum score
-                        if (story.score < minimumScore) {
-                            stories.remove(story);
-                            adapter.notifyItemRemoved(index);
-                            loadedTo = Math.max(0, loadedTo - 1);
-                            return;
-                        }
-
-                        adapter.notifyItemChanged(index);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        Utils.log("Failed to load story with id: " + story.id);
-                        adapter.notifyDataSetChanged();
+                //lets check if we should remove the post because of filter
+                for (String phrase : filterWords) {
+                    if (story.title.toLowerCase().contains(phrase.toLowerCase())) {
+                        stories.remove(story);
+                        adapter.notifyItemRemoved(index);
+                        loadedTo = Math.max(0, loadedTo - 1);
+                        return;
                     }
-                }, error -> {
+                }
+                // or domain name
+                for (String phrase : filterDomains) {
+                    if (story.url.toLowerCase().contains(phrase.toLowerCase())) {
+                        stories.remove(story);
+                        adapter.notifyItemRemoved(index);
+                        loadedTo = Math.max(0, loadedTo - 1);
+                        return;
+                    }
+                }
+
+                //or because it's a job
+                if (hideJobs && adapter.type != SettingsUtils.getJobsIndex(getResources()) && (story.isJob || story.by.equals("whoishiring"))) {
+                    stories.remove(story);
+                    adapter.notifyItemRemoved(index);
+                    loadedTo = Math.max(0, loadedTo - 1);
+                    return;
+                }
+
+                //or because it's less than the minimum score
+                if (story.score < minimumScore) {
+                    stories.remove(story);
+                    adapter.notifyItemRemoved(index);
+                    loadedTo = Math.max(0, loadedTo - 1);
+                    return;
+                }
+
+                adapter.notifyItemChanged(index);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Utils.log("Failed to load story with id: " + story.id);
+                adapter.notifyDataSetChanged();
+            }
+        }, error -> {
             error.printStackTrace();
             story.loadingFailed = true;
             adapter.notifyItemChanged(stories.indexOf(story));
@@ -554,11 +555,11 @@ public class StoriesFragment extends Fragment {
     }
 
     public void attemptRefresh() {
+        didSearch = false;
         hideUpdateButton();
-        if (adapter.searching) {
-            search(lastSearch);
-            return;
-        }
+
+        binding.storiesHeaderSpinner.setVisibility(View.VISIBLE);
+        binding.searchTitle.setVisibility(View.GONE);
 
         swipeRefreshLayout.setRefreshing(true);
 
@@ -570,11 +571,11 @@ public class StoriesFragment extends Fragment {
             int currentTime = (int) (System.currentTimeMillis() / 1000);
             int startTime = currentTime;
             if (adapter.type == 1) {
-                startTime = currentTime - 60*60*24;
+                startTime = currentTime - 60 * 60 * 24;
             } else if (adapter.type == 2) {
-                startTime = currentTime - 60*60*48;
+                startTime = currentTime - 60 * 60 * 48;
             } else if (adapter.type == 3) {
-                startTime = currentTime - 60*60*24*7;
+                startTime = currentTime - 60 * 60 * 24 * 7;
             }
 
             loadTopStoriesSince(startTime);
@@ -590,7 +591,6 @@ public class StoriesFragment extends Fragment {
             loadedTo = 0;
 
             stories.clear();
-            stories.add(new Story());
 
             ArrayList<Bookmark> bookmarks = Utils.loadBookmarks(getContext(), true);
 
@@ -611,48 +611,46 @@ public class StoriesFragment extends Fragment {
         }
 
         // if none of the above, do a normal loading
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, hnUrls[adapter.type == 0 ? 0 : adapter.type - 3],
-                response -> {
-                    swipeRefreshLayout.setRefreshing(false);
-                    try {
-                        JSONArray jsonArray = new JSONArray(response);
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, hnUrls[adapter.type == 0 ? 0 : adapter.type - 3], response -> {
+            swipeRefreshLayout.setRefreshing(false);
+            try {
+                JSONArray jsonArray = new JSONArray(response);
 
-                        loadedTo = 0;
+                loadedTo = 0;
 
-                        adapter.notifyItemRangeRemoved(1, stories.size());
+                adapter.notifyItemRangeRemoved(1, stories.size());
 
-                        stories.clear();
-                        stories.add(new Story());
+                stories.clear();
 
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            int id = Integer.parseInt(jsonArray.get(i).toString());
-                            if (hideClicked && clickedIds.contains(id)) {
-                                continue;
-                            }
-
-                            Story s = new Story("Loading...", id, false, clickedIds.contains(id));
-                            //let's try to fill this with old information if possible
-
-                            String cachedResponse = Utils.loadCachedStory(getContext(), id);
-                            if (cachedResponse != null && !cachedResponse.equals(JSONParser.ALGOLIA_ERROR_STRING)) {
-                                JSONParser.updateStoryWithAlgoliaResponse(s, cachedResponse);
-                            }
-
-                            stories.add(s);
-                            adapter.notifyItemInserted(1 + i);
-                        }
-
-                        if (adapter.loadingFailed) {
-                            adapter.loadingFailed = false;
-                            adapter.loadingFailedServerError = false;
-                        }
-
-                        adapter.notifyItemChanged(0);
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    int id = Integer.parseInt(jsonArray.get(i).toString());
+                    if (hideClicked && clickedIds.contains(id)) {
+                        continue;
                     }
-                }, error -> {
+
+                    Story s = new Story("Loading...", id, false, clickedIds.contains(id));
+                    //let's try to fill this with old information if possible
+
+                    String cachedResponse = Utils.loadCachedStory(getContext(), id);
+                    if (cachedResponse != null && !cachedResponse.equals(JSONParser.ALGOLIA_ERROR_STRING)) {
+                        JSONParser.updateStoryWithAlgoliaResponse(s, cachedResponse);
+                    }
+
+                    stories.add(s);
+                    adapter.notifyItemInserted(1 + i);
+                }
+
+                if (adapter.loadingFailed) {
+                    adapter.loadingFailed = false;
+                    adapter.loadingFailedServerError = false;
+                }
+
+                adapter.notifyItemChanged(0);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }, error -> {
             swipeRefreshLayout.setRefreshing(false);
             adapter.loadingFailed = true;
             adapter.notifyItemChanged(0);
@@ -663,83 +661,58 @@ public class StoriesFragment extends Fragment {
         queue.add(stringRequest);
     }
 
-    private void updateSearchStatus() {
-        hideUpdateButton();
-        adapter.notifyItemChanged(0);
-
-        if (getActivity() != null && getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).backPressedCallback.setEnabled(adapter.searching);
-        }
-
-        swipeRefreshLayout.setEnabled(!adapter.searching);
-
-        if (adapter.searching) {
-            //cancel all ongoing
-            queue.cancelAll(requestTag);
-            swipeRefreshLayout.setRefreshing(false);
-
-            adapter.notifyItemRangeRemoved(1, stories.size() + 1);
-            stories.clear();
-            stories.add(new Story());
-        } else {
-            int size = stories.size();
-            if (size > 1) {
-                stories.subList(1, size).clear();
-            }
-            adapter.notifyItemRangeRemoved(1, size + 1);
-
-            attemptRefresh();
-        }
-    }
-
     private void loadTopStoriesSince(int start_i) {
-        loadAlgolia("https://hn.algolia.com/api/v1/search?tags=story&numericFilters=created_at_i>" + start_i + "&hitsPerPage=200", true);
+        loadAlgolia("https://hn.algolia.com/api/v1/search?tags=story&numericFilters=created_at_i>" + start_i + "&hitsPerPage=200");
     }
 
     private void search(String query) {
+        getParentFragmentManager().popBackStack();
+        if (query == null || query.isEmpty()) {
+            return;
+        }
+        binding.storiesHeaderSpinner.setVisibility(View.GONE);
+        binding.searchTitle.setVisibility(View.VISIBLE);
+        didSearch = true;
         lastSearch = query;
-        adapter.lastSearch = query;
-
-        loadAlgolia("https://hn.algolia.com/api/v1/search_by_date?query=" + query + "&tags=story&hitsPerPage=200", false);
+        loadAlgolia("https://hn.algolia.com/api/v1/search_by_date?query=" + query + "&tags=story&hitsPerPage=200");
     }
 
-    private void loadAlgolia(String url, boolean markClicked) {
+    private void loadAlgolia(String url) {
         swipeRefreshLayout.setEnabled(true);
         swipeRefreshLayout.setRefreshing(true);
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                response -> {
-                    swipeRefreshLayout.setRefreshing(false);
-                    try {
-                        int oldSize = stories.size();
+        stories.clear();
+        adapter.notifyDataSetChanged();
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, response -> {
+            swipeRefreshLayout.setRefreshing(false);
+            try {
+                int oldSize = stories.size();
 
-                        stories.clear();
-                        stories.add(new Story());
 
-                        adapter.notifyItemRangeRemoved(1, oldSize + 1);
+                adapter.notifyItemRangeRemoved(1, oldSize + 1);
 
-                        stories.addAll(JSONParser.algoliaJsonToStories(response));
+                stories.addAll(JSONParser.algoliaJsonToStories(response));
 
-                        Iterator<Story> iterator = stories.iterator();
-                        while (iterator.hasNext()) {
-                            Story story = iterator.next();
-                            story.clicked = clickedIds.contains(story.id);
+                Iterator<Story> iterator = stories.iterator();
+                while (iterator.hasNext()) {
+                    Story story = iterator.next();
+                    story.clicked = clickedIds.contains(story.id);
 
-                            if (hideClicked && story.clicked) {
-                                iterator.remove();
-                            }
-                        }
-
-                        adapter.loadingFailed = false;
-                        adapter.loadingFailedServerError = false;
-
-                        adapter.notifyItemRangeInserted(1, stories.size());
-                        adapter.notifyItemChanged(0);
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    if (hideClicked && story.clicked) {
+                        iterator.remove();
                     }
+                }
 
-                }, error -> {
+                adapter.loadingFailed = false;
+                adapter.loadingFailedServerError = false;
+
+                adapter.notifyItemRangeInserted(1, stories.size());
+                adapter.notifyItemChanged(0);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }, error -> {
             if (error.networkResponse != null && error.networkResponse.statusCode == 404) {
                 adapter.loadingFailedServerError = true;
             }
@@ -760,15 +733,6 @@ public class StoriesFragment extends Fragment {
         return 0 < adapter.type && 4 > adapter.type;
     }
 
-    public boolean exitSearch() {
-        if (adapter.searching) {
-            adapter.searching = false;
-            adapter.lastSearch = "";
-            updateSearchStatus();
-            return true;
-        }
-        return false;
-    }
 
     private void hideUpdateButton() {
         if (updateContainer.getVisibility() == View.VISIBLE) {

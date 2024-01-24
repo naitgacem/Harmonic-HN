@@ -66,7 +66,6 @@ public class SubmissionsActivity extends AppCompatActivity {
                 SettingsUtils.shouldUseCompactView(this),
                 SettingsUtils.shouldShowThumbnails(this),
                 false,
-                SettingsUtils.shouldUseCompactHeader(this),
                 SettingsUtils.shouldUseLeftAlign(this),
                 SettingsUtils.getPreferredHotness(this),
                 SettingsUtils.getPreferredFaviconProvider(this),

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:transitionGroup="true"
+    android:id="@+id/SearchFragment"
+    android:fitsSystemWindows="true">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:liftOnScroll="true"
+        >
+
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/search_normal_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            app:navigationIcon="@drawable/ic_action_back">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:endIconContentDescription="Clear search"
+                app:endIconDrawable="@drawable/ic_action_clear"
+                app:endIconMode="clear_text"
+                app:endIconTint="?attr/colorControlNormal"
+                app:errorEnabled="false"
+                app:hintEnabled="false">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/search_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:hint="Search library"
+                    android:imeOptions="actionSearch|flagNoExtractUi"
+                    android:inputType="textFilter"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="0dp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
+
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

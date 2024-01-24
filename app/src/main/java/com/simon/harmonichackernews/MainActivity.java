@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -37,6 +38,12 @@ public class MainActivity extends BaseActivity implements StoriesFragment.StoryC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .setReorderingAllowed(true)
+                    .add(R.id.main_fragment_stories_container, StoriesFragment.class, null)
+                    .commit();
+        }
 
         if (Utils.isFirstAppStart(this)) {
             startActivity(new Intent(this, WelcomeActivity.class));
@@ -53,19 +60,13 @@ public class MainActivity extends BaseActivity implements StoriesFragment.StoryC
             showUpdateDialog();
         }
 
-        backPressedCallback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                final StoriesFragment fragment = (StoriesFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment_stories_container);
+        getOnBackPressedDispatcher()
+                .addCallback(new OnBackPressedCallback(true) {
+                    @Override
+                    public void handleOnBackPressed() {
 
-                if (fragment != null) {
-                    fragment.exitSearch();
-                }
-            }
-        };
-
-        getOnBackPressedDispatcher().addCallback(this, backPressedCallback);
-        backPressedCallback.setEnabled(false);
+                    }
+                });
     }
 
     @Override

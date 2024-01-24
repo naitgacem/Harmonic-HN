@@ -84,7 +84,6 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
     public boolean compactView;
     public boolean thumbnails;
     public boolean showIndex;
-    public boolean compactHeader;
     public boolean leftAlign;
     public String faviconProvider;
     public int hotness;
@@ -99,7 +98,6 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
                                     boolean shouldUseCompactView,
                                     boolean shouldShowThumbnails,
                                     boolean shouldShowIndex,
-                                    boolean shouldUseCompactHeader,
                                     boolean shouldLeftAlign,
                                     int preferredHotness,
                                     String faviconProv,
@@ -111,7 +109,6 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
         compactView = shouldUseCompactView;
         thumbnails = shouldShowThumbnails;
         showIndex = shouldShowIndex;
-        compactHeader = shouldUseCompactHeader;
         leftAlign = shouldLeftAlign;
         hotness = preferredHotness;
         faviconProvider = faviconProv;
@@ -124,7 +121,7 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
     @NotNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
-        if (viewType == TYPE_STORY) {
+        if (viewType == TYPE_STORY || viewType == TYPE_HEADER_MAIN) {
             return new StoryViewHolder(LayoutInflater.from(parent.getContext()).inflate(leftAlign ? R.layout.story_list_item_left : R.layout.story_list_item, parent, false));
         } else if (viewType == TYPE_HEADER_MAIN) {
             return new MainHeaderViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.stories_header, parent, false));
@@ -138,13 +135,12 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NotNull final RecyclerView.ViewHolder holder, int position) {
-        if (holder instanceof StoryViewHolder) {
-            final StoryViewHolder storyViewHolder = (StoryViewHolder) holder;
+        if (holder instanceof StoryViewHolder storyViewHolder) {
             final Context ctx = storyViewHolder.itemView.getContext();
 
             storyViewHolder.story = stories.get(position);
             if (showIndex) {
-                storyViewHolder.indexTextView.setText(position + ".");
+                storyViewHolder.indexTextView.setText(position + 1 + ".");
 
                 if (storyViewHolder.story.clicked) {
                     storyViewHolder.indexTextView.setTextColor(Utils.getColorViaAttr(ctx, R.attr.storyColorDisabled));
@@ -255,15 +251,8 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
                 storyViewHolder.commentLayoutView.setClickable(false);
                 storyViewHolder.commentsIcon.setAlpha(storyViewHolder.story.clicked ? 0.6f : 1.0f);
             }
-        } else if (holder instanceof MainHeaderViewHolder) {
-            final MainHeaderViewHolder headerViewHolder = (MainHeaderViewHolder) holder;
+        } else if (holder instanceof MainHeaderViewHolder headerViewHolder) {
             final Context ctx = headerViewHolder.itemView.getContext();
-
-            if (compactHeader) {
-                headerViewHolder.container.setPadding(0, Utils.pxFromDpInt(ctx.getResources(), 20), 0, Utils.pxFromDpInt(ctx.getResources(), 10));
-            } else {
-                headerViewHolder.container.setPadding(0, Utils.pxFromDpInt(ctx.getResources(), 40), 0, Utils.pxFromDpInt(ctx.getResources(), 26));
-            }
 
             headerViewHolder.moreButton.setVisibility(searching ? View.GONE : View.VISIBLE);
             headerViewHolder.spinnerContainer.setVisibility(searching ? View.GONE : View.VISIBLE);
@@ -295,14 +284,11 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
 
             headerViewHolder.loadingFailedLayout.setVisibility(loadingFailed ? View.VISIBLE : View.GONE);
             headerViewHolder.loadingFailedAlgoliaLayout.setVisibility(loadingFailedServerError ? View.VISIBLE : View.GONE);
-        } else if (holder instanceof SubmissionsHeaderViewHolder) {
-            final SubmissionsHeaderViewHolder submissionsHeaderViewHolder = (SubmissionsHeaderViewHolder) holder;
+        } else if (holder instanceof SubmissionsHeaderViewHolder submissionsHeaderViewHolder) {
 
             submissionsHeaderViewHolder.headerText.setText(submitter + "'s submissions");
 
-        } else if (holder instanceof CommentViewHolder) {
-            final CommentViewHolder commentViewHolder = (CommentViewHolder) holder;
-            final Context ctx = commentViewHolder.itemView.getContext();
+        } else if (holder instanceof CommentViewHolder commentViewHolder) {
 
             Story story = stories.get(position);
 
@@ -321,14 +307,10 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
 
     @Override
     public int getItemViewType(int position) {
-        if (position == 0) {
-            return atSubmissions ? TYPE_HEADER_SUBMISSIONS : TYPE_HEADER_MAIN;
-        } else {
-            if (atSubmissions) {
+        if (atSubmissions) {
                 return stories.get(position).isComment ? TYPE_COMMENT : TYPE_STORY;
-            } else {
+        } else {
                 return TYPE_STORY;
-            }
         }
     }
 
@@ -389,6 +371,7 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
         }
     }
 
+    @Deprecated
     public class MainHeaderViewHolder extends RecyclerView.ViewHolder {
         public final Spinner typeSpinner;
         public final LinearLayout container;
@@ -585,10 +568,6 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
 
     public interface ClickListener {
         void onItemClick(int position);
-    }
-
-    public void setSearchListener(SearchListener searchListener) {
-        storiesSearchListener = searchListener;
     }
 
     public interface SearchListener {

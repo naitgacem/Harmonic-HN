@@ -1,122 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/stories_header_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="38dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
+    android:clipToPadding="false"
     android:orientation="vertical"
-    android:paddingBottom="24dp">
+    tools:viewBindingIgnore="true">
     <!-- Above paddings are not respected, set in code -->
+
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp">
 
         <LinearLayout
             android:id="@+id/stories_header_spinner_container"
             android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
 
             <androidx.appcompat.widget.AppCompatSpinner
+                android:id="@+id/stories_header_spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:layout_marginRight="-10dp"
-                android:id="@+id/stories_header_spinner"
                 android:dropDownVerticalOffset="49dp"
-                android:spinnerMode="dropdown"
                 android:popupBackground="@drawable/popup_background_material"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"    />
+                android:spinnerMode="dropdown" />
 
         </LinearLayout>
 
         <EditText
-            android:visibility="gone"
-            android:focusable="true"
-            android:drawableLeft="@drawable/ic_action_search"
             android:id="@+id/stories_header_search_edittext"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:drawableLeft="@drawable/ic_action_search"
             android:drawablePadding="6dp"
-            android:hint="Search posts"
+            android:focusable="true"
             android:fontFamily="@font/product_sans"
-            android:singleLine="true"
+            android:hint="Search posts"
             android:imeOptions="actionSearch"
             android:inputType="textCapSentences"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="56dp"    />
+            android:singleLine="true"
+            android:visibility="gone" />
 
         <LinearLayout
-            android:orientation="horizontal"
-            android:layout_marginTop="-2dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-2dp"
+            android:orientation="horizontal">
 
             <ImageButton
                 android:id="@+id/stories_header_search_button"
-                android:layout_marginEnd="-4dp"
-                android:src="@drawable/ic_action_search"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginTop="4dp"
                 android:layout_width="48dp"
-                android:layout_height="48dp"    />
+                android:layout_height="48dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="-4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_action_search" />
 
             <ImageButton
                 android:id="@+id/stories_header_more"
-                android:layout_marginEnd="-12dp"
-                android:src="@drawable/ic_action_more"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginTop="4dp"
                 android:layout_width="48dp"
-                android:layout_height="48dp"    />
+                android:layout_height="48dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="-12dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_action_more" />
 
         </LinearLayout>
 
     </LinearLayout>
 
+
     <RelativeLayout
         android:id="@+id/stories_header_loading_indicator"
         android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_weight="1">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone">
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
-            android:indeterminate="true"
-            android:layout_marginTop="36dp"
-            android:layout_centerInParent="true"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginTop="36dp"
+            android:indeterminate="true" />
 
     </RelativeLayout>
-
 
 
     <LinearLayout
         android:id="@+id/stories_header_search_empty_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:paddingTop="56dp"
-        android:orientation="vertical">
+        android:visibility="gone">
 
         <ImageView
-            android:src="@drawable/ic_action_search"
             android:layout_width="match_parent"
-            android:layout_height="48dp"    />
+            android:layout_height="48dp"
+            android:src="@drawable/ic_action_search"
+            android:visibility="gone" />
 
         <TextView
-            android:visibility="visible"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/product_sans"
             android:gravity="center"
             android:paddingTop="4dp"
             android:paddingBottom="36dp"
-            android:fontFamily="@font/product_sans"
+            android:text="Search for stories"
+            android:textColor="?attr/textColorHighlighted"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="?attr/textColorHighlighted"
-            android:text="Search for stories"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"    />
+            android:visibility="visible" />
 
     </LinearLayout>
 
@@ -124,75 +128,77 @@
         android:id="@+id/stories_header_no_bookmarks"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:paddingTop="56dp"
-        android:orientation="vertical">
+        android:visibility="gone">
 
         <ImageView
-            android:src="@drawable/ic_action_bookmark_border"
             android:layout_width="match_parent"
-            android:layout_height="48dp"    />
+            android:layout_height="48dp"
+            android:src="@drawable/ic_action_bookmark_border" />
 
         <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/product_sans"
             android:gravity="center"
             android:paddingTop="4dp"
             android:paddingBottom="36dp"
-            android:fontFamily="@font/product_sans"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="?attr/textColorHighlighted"
             android:text="No bookmarks"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"    />
+            android:textColor="?attr/textColorHighlighted"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/stories_header_loading_failed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
         android:layout_marginBottom="48dp"
-        android:layout_width="match_parent"
         android:orientation="vertical"
-        android:layout_height="wrap_content">
+        android:visibility="gone">
 
         <TextView
-            android:gravity="center"
-            android:paddingTop="24dp"
-            android:paddingBottom="6dp"
-            android:paddingRight="24dp"
-            android:paddingLeft="24dp"
-            android:fontFamily="@font/product_sans"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="?attr/textColorHighlighted"
-            android:text="Loading failed"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"    />
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/product_sans"
+            android:gravity="center"
+            android:paddingLeft="24dp"
+            android:paddingTop="24dp"
+            android:paddingRight="24dp"
+            android:paddingBottom="6dp"
+            android:text="Loading failed"
+            android:textColor="?attr/textColorHighlighted"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/stories_header_loading_failed_algolia"
-            android:visibility="gone"
-            android:paddingBottom="6dp"
-            android:paddingRight="24dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/product_sans"
             android:paddingLeft="24dp"
             android:paddingTop="6dp"
-            android:fontFamily="@font/product_sans"
-            android:textSize="17sp"
-            android:textColor="?attr/storyColorNormal"
+            android:paddingRight="24dp"
+            android:paddingBottom="6dp"
             android:text="API Server error: This is most likely due to the Algolia Hacker News API which Harmonic uses being down. Historically, outages for the Algolia API are limited to a few hours but they can last longer."
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"    />
+            android:textColor="?attr/storyColorNormal"
+            android:textSize="17sp"
+            android:visibility="gone" />
 
         <Button
-            android:layout_gravity="center_horizontal"
+            android:id="@+id/stories_header_retry_button"
+            style="@style/Widget.Material3.Button.ElevatedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/Widget.Material3.Button.ElevatedButton"
-            app:icon="@drawable/ic_action_refresh"
-            app:backgroundTint="?attr/colorPrimaryDark"
-            app:iconTint="#fff"
+            android:layout_gravity="center_horizontal"
+            android:text="Retry"
             android:textColor="#fff"
-            android:id="@+id/stories_header_retry_button"
-            android:text="Retry"    />
+            app:backgroundTint="?attr/colorPrimaryDark"
+            app:icon="@drawable/ic_action_refresh"
+            app:iconTint="#fff" />
 
     </LinearLayout>
 
