@@ -79,8 +79,8 @@ public class StoriesFragment extends Fragment {
     private LinearLayoutManager linearLayoutManager;
     private Set<Integer> clickedIds;
     private ArrayList<String> filterWords;
-    private int minimumScore;
     private ArrayList<String> filterDomains;
+    private int minimumScore;
     private boolean hideJobs, alwaysOpenComments, hideClicked;
     private int loadedTo = 0;
     public OnBackPressedCallback backPressedCallback;
@@ -341,7 +341,10 @@ public class StoriesFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
+        //----------------------------------------------------------------------------------------//
+        // In this section we are comparing the current settings with the current state
+        // Updating as necessary
+        //----------------------------------------------------------------------------------------//
         filterWords = Utils.getFilterWords(getContext());
         minimumScore = Utils.getMinScore(getContext());
         filterDomains = Utils.getFilterDomains(getContext());

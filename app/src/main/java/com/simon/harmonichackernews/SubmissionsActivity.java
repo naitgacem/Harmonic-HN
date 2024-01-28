@@ -33,7 +33,6 @@ public class SubmissionsActivity extends AppCompatActivity {
 
     private StoryRecyclerViewAdapter adapter;
     private ArrayList<Story> submissions;
-    private LinearLayoutManager linearLayoutManager;
     private RequestQueue queue;
     private SwipeRefreshLayout swipeRefreshLayout;
 
@@ -57,7 +56,7 @@ public class SubmissionsActivity extends AppCompatActivity {
 
         queue = NetworkComponent.getRequestQueueInstance(this);
 
-        linearLayoutManager = new LinearLayoutManager(this);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
 
         adapter = new StoryRecyclerViewAdapter(submissions,
