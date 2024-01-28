@@ -358,7 +358,7 @@ public class StoriesFragment extends Fragment {
         if (timeDiff > 1000 * 60 * 60 && !adapter.searching && adapter.type != SettingsUtils.getBookmarksIndex(getResources()) && !currentTypeIsAlgolia()) {
             showUpdateButton();
         }
-
+        binding.getRoot().invalidate();
         if (adapter.showPoints != SettingsUtils.shouldShowPoints(getContext())) {
             adapter.showPoints = !adapter.showPoints;
             adapter.notifyItemRangeChanged(0, stories.size());
@@ -675,6 +675,8 @@ public class StoriesFragment extends Fragment {
         }
         binding.storiesHeaderSpinner.setVisibility(View.GONE);
         binding.searchTitle.setVisibility(View.VISIBLE);
+        String displayQuery = String.format(requireContext().getString(R.string.search_query_display), query);
+        binding.searchTitleQuery.setText(displayQuery);
         backPressedCallback.setEnabled(true);
         loadAlgolia("https://hn.algolia.com/api/v1/search_by_date?query=" + query + "&tags=story&hitsPerPage=200");
     }

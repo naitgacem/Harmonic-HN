@@ -17,7 +17,7 @@
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/topBar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?attr/collapsingToolbarLayoutMediumSize"
             app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed"
             android:background="?android:colorBackground"
             >
@@ -39,15 +39,30 @@
                         android:layout_gravity="start"
                         android:dropDownVerticalOffset="49dp"
                         android:spinnerMode="dropdown"
-                        android:visibility="visible"/>
-                    <TextView
+                        android:visibility="gone"/>
+                    <LinearLayout
                         android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:text="Search Results"
-                        android:visibility="gone"
-                        android:layout_gravity="start"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
                         android:id="@+id/search_title"
-                        android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"/>
+                        android:visibility="visible">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Search Results"
+                            android:layout_gravity="center_vertical"
+                            android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="dutch"
+                            android:layout_gravity="center_vertical"
+                            android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+                            android:maxLines="1"
+                            android:ellipsize="end"
+                            android:id="@+id/search_title_query"
+                            android:layout_marginStart="16dp"/>
+                    </LinearLayout>
                     <ImageButton
                         android:id="@+id/stories_header_more"
                         android:layout_width="48dp"
