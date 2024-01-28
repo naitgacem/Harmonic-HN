@@ -31,7 +31,6 @@ public class MainActivity extends BaseActivity implements StoriesFragment.StoryC
     public static ArrayList<CommentsScrollProgress> commentsScrollProgresses = new ArrayList<>();
 
     int lastPosition = 0;
-    public OnBackPressedCallback backPressedCallback;
 
     public int bottom = 0;
 

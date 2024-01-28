@@ -82,9 +82,8 @@ public class StoriesFragment extends Fragment {
     private int minimumScore;
     private ArrayList<String> filterDomains;
     private boolean hideJobs, alwaysOpenComments, hideClicked;
-    private String lastSearch;
-    private boolean didSearch = false;
     private int loadedTo = 0;
+    public OnBackPressedCallback backPressedCallback;
 
     public StoriesFragment() {
         super();
@@ -104,6 +103,7 @@ public class StoriesFragment extends Fragment {
         stories = new ArrayList<>();
         setupAdapter();
         setupHeader();
+        handleBackPress();
         recyclerView = binding.storiesRecyclerview;
         swipeRefreshLayout = binding.storiesSwipeRefresh;
         updateContainer = binding.storiesUpdateContainer;
@@ -174,13 +174,13 @@ public class StoriesFragment extends Fragment {
     }
 
     private void handleBackPress() {
-        var onBackPressedCallback = new OnBackPressedCallback(false){
+        backPressedCallback = new OnBackPressedCallback(false){
             @Override
             public void handleOnBackPressed() {
                 attemptRefresh();
             }
         };
-        requireActivity().getOnBackPressedDispatcher().addCallback(onBackPressedCallback);
+        requireActivity().getOnBackPressedDispatcher().addCallback(backPressedCallback);
     }
 
     private void onClickSearch(View v) {
@@ -555,7 +555,7 @@ public class StoriesFragment extends Fragment {
     }
 
     public void attemptRefresh() {
-        didSearch = false;
+        backPressedCallback.setEnabled(false);
         hideUpdateButton();
 
         binding.storiesHeaderSpinner.setVisibility(View.VISIBLE);
@@ -672,8 +672,7 @@ public class StoriesFragment extends Fragment {
         }
         binding.storiesHeaderSpinner.setVisibility(View.GONE);
         binding.searchTitle.setVisibility(View.VISIBLE);
-        didSearch = true;
-        lastSearch = query;
+        backPressedCallback.setEnabled(true);
         loadAlgolia("https://hn.algolia.com/api/v1/search_by_date?query=" + query + "&tags=story&hitsPerPage=200");
     }
 

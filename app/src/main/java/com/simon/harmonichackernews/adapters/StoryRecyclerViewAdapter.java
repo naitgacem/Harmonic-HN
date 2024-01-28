@@ -4,37 +4,24 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ImageSpan;
 import android.util.TypedValue;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.TooltipCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.button.MaterialButton;
 import com.simon.harmonichackernews.R;
 import com.simon.harmonichackernews.data.Story;
 import com.simon.harmonichackernews.network.FaviconLoader;
@@ -43,35 +30,24 @@ import com.simon.harmonichackernews.utils.SettingsUtils;
 import com.simon.harmonichackernews.utils.ThemeUtils;
 import com.simon.harmonichackernews.utils.Utils;
 import com.simon.harmonichackernews.utils.ViewUtils;
-import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 import org.sufficientlysecure.htmltextview.OnClickATagListener;
 
-import java.lang.reflect.Array;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final List<Story> stories;
-    private ClickListener typeClickListener;
     private ClickListener linkClickListener;
     private ClickListener commentClickListener;
     private ClickListener commentRepliesClickListener;
     private ClickListener commentStoryClickListener;
-    private SearchListener storiesSearchListener;
-    private RefreshListener refreshListener;
-    private View.OnClickListener moreClickListener;
     private LongClickCoordinateListener longClickListener;
     private final boolean atSubmissions;
     private final String submitter;
 
-    private static final int TYPE_HEADER_MAIN = 0;
     private static final int TYPE_HEADER_SUBMISSIONS = 1;
     private static final int TYPE_STORY = 2;
     private static final int TYPE_COMMENT = 3;
@@ -89,8 +65,6 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
     public int hotness;
     public int type;
     public boolean searching = false;
-
-    public String lastSearch = "";
 
     public StoryRecyclerViewAdapter(List<Story> items,
                                     boolean shouldShowPoints,
@@ -121,10 +95,8 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
     @NotNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
-        if (viewType == TYPE_STORY || viewType == TYPE_HEADER_MAIN) {
+        if (viewType == TYPE_STORY) {
             return new StoryViewHolder(LayoutInflater.from(parent.getContext()).inflate(leftAlign ? R.layout.story_list_item_left : R.layout.story_list_item, parent, false));
-        } else if (viewType == TYPE_HEADER_MAIN) {
-            return new MainHeaderViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.stories_header, parent, false));
         } else if (viewType == TYPE_HEADER_SUBMISSIONS) {
             return new SubmissionsHeaderViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.submissions_header, parent, false));
         } else {
@@ -251,39 +223,6 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
                 storyViewHolder.commentLayoutView.setClickable(false);
                 storyViewHolder.commentsIcon.setAlpha(storyViewHolder.story.clicked ? 0.6f : 1.0f);
             }
-        } else if (holder instanceof MainHeaderViewHolder headerViewHolder) {
-            final Context ctx = headerViewHolder.itemView.getContext();
-
-            headerViewHolder.moreButton.setVisibility(searching ? View.GONE : View.VISIBLE);
-            headerViewHolder.spinnerContainer.setVisibility(searching ? View.GONE : View.VISIBLE);
-
-            headerViewHolder.searchButton.setImageResource(searching ? R.drawable.ic_action_cancel : R.drawable.ic_action_search);
-
-            headerViewHolder.searchEditText.setVisibility(searching ? View.VISIBLE : View.GONE);
-            headerViewHolder.searchEditText.setText(stories.get(0).title);
-
-            if (searching) {
-                headerViewHolder.loadingIndicator.setVisibility(View.GONE);
-                headerViewHolder.searchEditText.requestFocus();
-                headerViewHolder.searchEditText.setText(lastSearch);
-                headerViewHolder.searchEditText.setSelection(lastSearch.length());
-
-                headerViewHolder.searchEmptyContainer.setVisibility(stories.size() == 1 ? View.VISIBLE : View.GONE);
-                headerViewHolder.noBookmarksLayout.setVisibility(View.GONE);
-            } else {
-                headerViewHolder.noBookmarksLayout.setVisibility((stories.size() == 1 && type == SettingsUtils.getBookmarksIndex(ctx.getResources())) ? View.VISIBLE : View.GONE);
-                headerViewHolder.searchEmptyContainer.setVisibility(View.GONE);
-
-                headerViewHolder.loadingIndicator.setVisibility(stories.size() == 1 && !loadingFailed && !loadingFailedServerError ? View.VISIBLE : View.GONE);
-            }
-
-            headerViewHolder.typeSpinner.setSelection(type);
-
-            TooltipCompat.setTooltipText(headerViewHolder.searchButton, searching ? "Close" : "Search");
-            TooltipCompat.setTooltipText(headerViewHolder.moreButton, "More");
-
-            headerViewHolder.loadingFailedLayout.setVisibility(loadingFailed ? View.VISIBLE : View.GONE);
-            headerViewHolder.loadingFailedAlgoliaLayout.setVisibility(loadingFailedServerError ? View.VISIBLE : View.GONE);
         } else if (holder instanceof SubmissionsHeaderViewHolder submissionsHeaderViewHolder) {
 
             submissionsHeaderViewHolder.headerText.setText(submitter + "'s submissions");
@@ -371,103 +310,6 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
         }
     }
 
-    @Deprecated
-    public class MainHeaderViewHolder extends RecyclerView.ViewHolder {
-        public final Spinner typeSpinner;
-        public final LinearLayout container;
-        public final LinearLayout loadingFailedLayout;
-        public final TextView loadingFailedAlgoliaLayout;
-        public final LinearLayout noBookmarksLayout;
-        public final LinearLayout spinnerContainer;
-        public final LinearLayout searchEmptyContainer;
-        public final RelativeLayout loadingIndicator;
-        public final EditText searchEditText;
-        public final ImageButton moreButton;
-        public final ImageButton searchButton;
-        public final Button retryButton;
-
-        public ArrayAdapter<CharSequence> typeAdapter;
-
-        public MainHeaderViewHolder(View view) {
-            super(view);
-
-            final Context ctx = view.getContext();
-
-            loadingFailedLayout = view.findViewById(R.id.stories_header_loading_failed);
-            loadingFailedAlgoliaLayout = view.findViewById(R.id.stories_header_loading_failed_algolia);
-            container = view.findViewById(R.id.stories_header_container);
-            typeSpinner = view.findViewById(R.id.stories_header_spinner);
-            noBookmarksLayout = view.findViewById(R.id.stories_header_no_bookmarks);
-            searchEditText = view.findViewById(R.id.stories_header_search_edittext);
-            moreButton = view.findViewById(R.id.stories_header_more);
-            spinnerContainer = view.findViewById(R.id.stories_header_spinner_container);
-            searchButton = view.findViewById(R.id.stories_header_search_button);
-            searchEmptyContainer = view.findViewById(R.id.stories_header_search_empty_container);
-            retryButton = view.findViewById(R.id.stories_header_retry_button);
-            loadingIndicator = view.findViewById(R.id.stories_header_loading_indicator);
-
-            retryButton.setOnClickListener( (v) -> refreshListener.onRefresh());
-
-            moreButton.setOnClickListener(moreClickListener);
-
-            searchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                @Override
-                public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-                    if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                        doSearch();
-
-                        if (textView != null) {
-                            InputMethodManager imm = (InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                        }
-                        return true;
-                    }
-                    return false;
-                }
-            });
-
-            searchButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    searching = !searching;
-                    storiesSearchListener.onSearchStatusChanged();
-
-                    InputMethodManager imm = (InputMethodManager) ctx.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    if (searching) {
-                        imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
-                    } else {
-                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                        lastSearch = "";
-                    }
-                }
-            });
-
-            String[] sortingOptions = ctx.getResources().getStringArray(R.array.sorting_options);
-            ArrayList<CharSequence> typeAdapterList = new ArrayList<>(Arrays.asList(sortingOptions));
-            typeAdapter = new ArrayAdapter<>(ctx, R.layout.spinner_top_layout, R.id.selection_dropdown_item_textview, typeAdapterList);
-            typeAdapter.setDropDownViewResource(R.layout.spinner_item_layout);
-
-            typeSpinner.setAdapter(typeAdapter);
-            typeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                    if (i != type) {
-                        typeClickListener.onItemClick(i);
-                    }
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> adapterView) {
-
-                }
-            });
-        }
-
-        private void doSearch() {
-            storiesSearchListener.onQueryTextSubmit(searchEditText.getText().toString());
-        }
-    }
-
 
     public static class SubmissionsHeaderViewHolder extends RecyclerView.ViewHolder {
 
@@ -534,10 +376,6 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
         }
     }
 
-    public void setOnTypeClickListener(ClickListener clickListener) {
-        typeClickListener = clickListener;
-    }
-
     public void setOnLinkClickListener(ClickListener clickListener) {
         linkClickListener = clickListener;
     }
@@ -559,20 +397,10 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
     }
 
     public void setOnRefreshListener(RefreshListener listener) {
-        refreshListener = listener;
-    }
-
-    public void setOnMoreClickListener(View.OnClickListener listener) {
-        moreClickListener = listener;
     }
 
     public interface ClickListener {
         void onItemClick(int position);
-    }
-
-    public interface SearchListener {
-        void onQueryTextSubmit(String query);
-        void onSearchStatusChanged();
     }
 
     public interface RefreshListener {
