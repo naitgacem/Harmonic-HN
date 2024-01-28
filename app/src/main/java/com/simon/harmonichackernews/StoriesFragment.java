@@ -358,27 +358,27 @@ public class StoriesFragment extends Fragment {
 
         if (adapter.showPoints != SettingsUtils.shouldShowPoints(getContext())) {
             adapter.showPoints = !adapter.showPoints;
-            adapter.notifyItemRangeChanged(1, stories.size());
+            adapter.notifyItemRangeChanged(0, stories.size());
         }
 
         if (adapter.showCommentsCount != SettingsUtils.shouldShowCommentsCount(getContext())) {
             adapter.showCommentsCount = !adapter.showCommentsCount;
-            adapter.notifyItemRangeChanged(1, stories.size());
+            adapter.notifyItemRangeChanged(0, stories.size());
         }
 
         if (adapter.compactView != SettingsUtils.shouldUseCompactView(getContext())) {
             adapter.compactView = !adapter.compactView;
-            adapter.notifyItemRangeChanged(1, stories.size());
+            adapter.notifyItemRangeChanged(0, stories.size());
         }
 
         if (adapter.thumbnails != SettingsUtils.shouldShowThumbnails(getContext())) {
             adapter.thumbnails = !adapter.thumbnails;
-            adapter.notifyItemRangeChanged(1, stories.size());
+            adapter.notifyItemRangeChanged(0, stories.size());
         }
 
         if (adapter.showIndex != SettingsUtils.shouldShowIndex(getContext())) {
             adapter.showIndex = !adapter.showIndex;
-            adapter.notifyItemRangeChanged(1, stories.size());
+            adapter.notifyItemRangeChanged(0, stories.size());
         }
 
         if (adapter.leftAlign != SettingsUtils.shouldUseLeftAlign(getContext())) {
@@ -394,7 +394,7 @@ public class StoriesFragment extends Fragment {
 
         if (adapter.hotness != SettingsUtils.getPreferredHotness(getContext())) {
             adapter.hotness = SettingsUtils.getPreferredHotness(getContext());
-            adapter.notifyItemRangeChanged(1, stories.size());
+            adapter.notifyItemRangeChanged(0, stories.size());
         }
 
         if (hideJobs != SettingsUtils.shouldHideJobs(getContext())) {
@@ -404,7 +404,7 @@ public class StoriesFragment extends Fragment {
 
         if (!Objects.equals(adapter.faviconProvider, SettingsUtils.getPreferredFaviconProvider(getContext()))) {
             adapter.faviconProvider = SettingsUtils.getPreferredFaviconProvider(getContext());
-            adapter.notifyItemRangeChanged(1, stories.size());
+            adapter.notifyItemRangeChanged(0, stories.size());
         }
     }
 
@@ -587,7 +587,7 @@ public class StoriesFragment extends Fragment {
 
         if (adapter.type == SettingsUtils.getBookmarksIndex(getResources())) {
             //lets load bookmarks instead - or rather add empty stories with correct id:s and start loading them
-            adapter.notifyItemRangeRemoved(1, stories.size() + 1);
+            adapter.notifyItemRangeRemoved(0, stories.size());
             loadedTo = 0;
 
             stories.clear();
@@ -598,9 +598,9 @@ public class StoriesFragment extends Fragment {
                 Story s = new Story("Loading...", bookmarks.get(i).id, false, false);
 
                 stories.add(s);
-                adapter.notifyItemInserted(i + 1);
+                adapter.notifyItemInserted(i);
                 if (i < 20) {
-                    loadStory(stories.get(i + 1), 0);
+                    loadStory(stories.get(i), 0);
                 }
             }
 
@@ -618,7 +618,7 @@ public class StoriesFragment extends Fragment {
 
                 loadedTo = 0;
 
-                adapter.notifyItemRangeRemoved(1, stories.size());
+                adapter.notifyItemRangeRemoved(0, stories.size());
 
                 stories.clear();
 
@@ -637,7 +637,7 @@ public class StoriesFragment extends Fragment {
                     }
 
                     stories.add(s);
-                    adapter.notifyItemInserted(1 + i);
+                    adapter.notifyItemInserted(i);
                 }
 
                 if (adapter.loadingFailed) {
@@ -687,7 +687,7 @@ public class StoriesFragment extends Fragment {
                 int oldSize = stories.size();
 
 
-                adapter.notifyItemRangeRemoved(1, oldSize + 1);
+                adapter.notifyItemRangeRemoved(0, oldSize);
 
                 stories.addAll(JSONParser.algoliaJsonToStories(response));
 
@@ -704,7 +704,7 @@ public class StoriesFragment extends Fragment {
                 adapter.loadingFailed = false;
                 adapter.loadingFailedServerError = false;
 
-                adapter.notifyItemRangeInserted(1, stories.size());
+                adapter.notifyItemRangeInserted(0, stories.size());
                 adapter.notifyItemChanged(0);
 
             } catch (JSONException e) {
