@@ -59,14 +59,6 @@ public class MainActivity extends BaseActivity implements StoriesFragment.StoryC
         if (Utils.justUpdated(this) && SettingsUtils.shouldShowChangelog(this)) {
             showUpdateDialog();
         }
-
-        getOnBackPressedDispatcher()
-                .addCallback(new OnBackPressedCallback(true) {
-                    @Override
-                    public void handleOnBackPressed() {
-
-                    }
-                });
     }
 
     @Override
