@@ -49,7 +49,7 @@ public class ThemeUtils {
     public static void setupTheme(ComponentActivity activity, boolean swipeBack, boolean specialFlags) {
         String theme = getPreferredTheme(activity);
         switch (theme) {
-            case "material_daynight":
+            case "material_daynight" -> {
                 //below 30, default on comments is swipeBack so if we don't use it we need to change to a normal theme
                 if (Build.VERSION.SDK_INT < 30) {
                     if (!swipeBack) {
@@ -61,31 +61,23 @@ public class ThemeUtils {
                         activity.setTheme(R.style.ThemeSwipeBackNoActionBarMaterialDayNight);
                     }
                 }
-                break;
-            case "material_dark":
-                activity.setTheme(swipeBack ? R.style.ThemeSwipeBackNoActionBarMaterialDark : R.style.AppThemeMaterialDark);
-                break;
-            case "amoled":
-                activity.setTheme(swipeBack ? R.style.ThemeSwipeBackNoActionBarAmoledDark : R.style.AppThemeAmoledDark);
-                break;
-            case "gray":
-                activity.setTheme(swipeBack ? R.style.ThemeSwipeBackNoActionBarGray : R.style.AppThemeGray);
-                break;
-            case "light":
-                activity.setTheme(swipeBack ? R.style.ThemeSwipeBackNoActionBarLight : R.style.AppThemeLight);
-                break;
-            case "material_light":
-                activity.setTheme(swipeBack ? R.style.ThemeSwipeBackNoActionBarMaterialLight : R.style.AppThemeMaterialLight);
-                break;
-            case "white":
-                activity.setTheme(swipeBack ? R.style.ThemeSwipeBackNoActionBarWhite : R.style.AppThemeWhite);
-                break;
+            }
+            case "material_dark" ->
+                    activity.setTheme(swipeBack ? R.style.ThemeSwipeBackNoActionBarMaterialDark : R.style.AppThemeMaterialDark);
+            case "amoled" ->
+                    activity.setTheme(swipeBack ? R.style.ThemeSwipeBackNoActionBarAmoledDark : R.style.AppThemeAmoledDark);
+            case "gray" ->
+                    activity.setTheme(swipeBack ? R.style.ThemeSwipeBackNoActionBarGray : R.style.AppThemeGray);
+            case "light" ->
+                    activity.setTheme(swipeBack ? R.style.ThemeSwipeBackNoActionBarLight : R.style.AppThemeLight);
+            case "material_light" ->
+                    activity.setTheme(swipeBack ? R.style.ThemeSwipeBackNoActionBarMaterialLight : R.style.AppThemeMaterialLight);
+            case "white" ->
+                    activity.setTheme(swipeBack ? R.style.ThemeSwipeBackNoActionBarWhite : R.style.AppThemeWhite);
+
             //needed because of comment activity where the default is AppTheme, now swipeBack
-            case "dark":
-                activity.setTheme(swipeBack ? R.style.Theme_Swipe_Back_NoActionBar : R.style.AppTheme);
-
-                break;
-
+            case "dark" ->
+                    activity.setTheme(swipeBack ? R.style.Theme_Swipe_Back_NoActionBar : R.style.AppTheme);
         }
 
         Window window = activity.getWindow();
@@ -135,26 +127,18 @@ public class ThemeUtils {
 
     public static int getBackgroundColorResource(Context ctx) {
         String theme = getPreferredTheme(ctx);
-        switch (theme) {
-            case "amoled":
-                return android.R.color.black;
-            case "gray":
-                return R.color.grayBackground;
-            case "light":
-                return R.color.lightBackground;
-            case "white":
-                return R.color.whiteBackground;
-            case "material_dark":
-                return R.color.material_you_neutral_900;
-            case "material_light":
-                return R.color.material_you_neutral_50;
-            case "material_daynight":
-                return uiModeNight(ctx) ? R.color.material_you_neutral_900 : R.color.material_you_neutral_50;
-            case "dark":
-                return R.color.background;
-            default:
-                return R.color.background;
-        }
+        return switch (theme) {
+            case "amoled" -> android.R.color.black;
+            case "gray" -> R.color.grayBackground;
+            case "light" -> R.color.lightBackground;
+            case "white" -> R.color.whiteBackground;
+            case "material_dark" -> R.color.material_you_neutral_900;
+            case "material_light" -> R.color.material_you_neutral_50;
+            case "material_daynight" ->
+                    uiModeNight(ctx) ? R.color.material_you_neutral_900 : R.color.material_you_neutral_50;
+            case "dark" -> R.color.background;
+            default -> R.color.background;
+        };
     }
 
     public static String getPreferredTheme(Context ctx) {

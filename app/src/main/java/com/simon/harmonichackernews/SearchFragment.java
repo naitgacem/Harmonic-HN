@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.transition.MaterialSharedAxis;
 import com.simon.harmonichackernews.databinding.FragmentSearchBinding;
 
 import java.util.ArrayList;
@@ -36,6 +37,14 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         binding = FragmentSearchBinding.inflate(inflater, container, false);
+
+        setEnterTransition(new MaterialSharedAxis(MaterialSharedAxis.Z, true)
+                .setDuration(600)
+        );
+        setReturnTransition(new MaterialSharedAxis(MaterialSharedAxis.Z, false)
+                .setDuration(600)
+        );
+
         return binding.getRoot();
     }
     @Override

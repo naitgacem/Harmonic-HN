@@ -38,4 +38,8 @@
         <item name="android:colorBackground">?attr/colorSurfaceContainerHigh</item>
     </style>
 
+    <style name="customAppBarLayoutStyle" parent="Widget.Design.AppBarLayout">
+        <item name="android:background">?attr/storiesHeaderColor</item>
+    </style>
+
 </resources>

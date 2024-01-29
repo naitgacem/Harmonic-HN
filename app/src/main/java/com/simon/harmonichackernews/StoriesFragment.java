@@ -37,6 +37,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
+import com.google.android.material.transition.MaterialSharedAxis;
 import com.simon.harmonichackernews.adapters.StoryRecyclerViewAdapter;
 import com.simon.harmonichackernews.data.Bookmark;
 import com.simon.harmonichackernews.data.Story;
@@ -93,6 +94,14 @@ public class StoriesFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         clickedIds = SettingsUtils.readIntSetFromSharedPreferences(requireContext(), Utils.KEY_SHARED_PREFERENCES_CLICKED_IDS);
+
+        setExitTransition(new MaterialSharedAxis(MaterialSharedAxis.Z, true)
+                .setDuration(600)
+        );
+        setReenterTransition(new MaterialSharedAxis(MaterialSharedAxis.Z, false)
+                .setDuration(600)
+        );
+
         binding = FragmentStoriesBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -201,7 +210,12 @@ public class StoriesFragment extends Fragment {
                 search(result, tagsStr.toString());
             }
         });
-        requireActivity().getSupportFragmentManager().beginTransaction().setReorderingAllowed(true).add(R.id.main_fragment_stories_container, SearchFragment.class, null).addToBackStack("search").commit();
+
+        requireActivity().getSupportFragmentManager().beginTransaction().
+                setReorderingAllowed(true).
+                add(R.id.main_fragment_stories_container, SearchFragment.class, null)
+                .addToBackStack("search")
+                .commit();
 
     }
 

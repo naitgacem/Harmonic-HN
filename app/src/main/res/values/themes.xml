@@ -1,9 +1,10 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
     <!-- These base themes are so that we can tell the app that android:isLightTheme="false"
     which enables us to use darkened webview again!-->
-    <style name="AppThemeBase" parent="Theme.Material3.Dark.NoActionBar"></style>
-    <style name="AppThemeLightBase" parent="Theme.Material3.Light.NoActionBar"></style>
+    <style name="AppThemeBase" parent="Theme.Material3.Dark.NoActionBar" />
+
+    <style name="AppThemeLightBase" parent="Theme.Material3.Light.NoActionBar" />
 
     <!-- This is just for daynight, there is another theme resource in the night folder-->
     <style name="AppThemeMaterialDayNight" parent="AppThemeMaterialLight"></style>
@@ -23,6 +24,7 @@
 
         <item name="android:windowBackground">@color/material_you_neutral_900</item>
         <item name="android:colorBackground">@color/material_you_neutral_900</item>
+        <item name="storiesHeaderColor">@color/material_you_neutral_900</item>
         <item name="colorControlHighlight">#40ffffff</item>
 
         <item name="colorPrimary">@color/material_you_third_400</item>
@@ -40,6 +42,7 @@
         <item name="alertDialogTheme">@style/AlertDialogMaterialStyle</item>
         <item name="dialogCornerRadius">28dp</item>
         <item name="switchPreferenceCompatStyle">@style/MaterialSwitchPreferenceCompat</item>
+        <item name="appBarLayoutStyle">@style/customAppBarLayoutStyle</item>
     </style>
 
     <style name="AppTheme" parent="AppThemeBase">
@@ -64,6 +67,7 @@
 
         <item name="android:windowBackground">@color/background</item>
         <item name="android:colorBackground">@color/background</item>
+        <item name="storiesHeaderColor">@color/background</item>
         <item name="colorControlHighlight">#40ffffff</item>
 
         <item name="popupMenuBackground">@drawable/popup_dark_background</item>
@@ -76,11 +80,13 @@
         <item name="alertDialogTheme">@style/AlertDialogMaterialStyle</item>
         <item name="dialogCornerRadius">28dp</item>
         <item name="switchPreferenceCompatStyle">@style/MaterialSwitchPreferenceCompat</item>
+        <item name="appBarLayoutStyle">@style/customAppBarLayoutStyle</item>
     </style>
 
     <style name="AppThemeAmoledDark" parent="AppTheme">
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:colorBackground">@android:color/black</item>
+        <item name="storiesHeaderColor">@android:color/black</item>
         <item name="android:statusBarColor">@android:color/black</item>
         <item name="colorSurfaceContainerHigh">@android:color/black</item>
 
@@ -96,6 +102,7 @@
     <style name="AppThemeGray" parent="AppTheme">
         <item name="android:windowBackground">@color/grayBackground</item>
         <item name="android:colorBackground">@color/grayBackground</item>
+        <item name="storiesHeaderColor">@color/grayBackground</item>
         <item name="android:statusBarColor">@color/grayStatusBarColor</item>
         <item name="colorSurfaceContainerHigh">@color/grayBackground</item>
     </style>
@@ -121,6 +128,7 @@
 
         <item name="android:windowBackground">@color/lightBackground</item>
         <item name="android:colorBackground">@color/lightBackground</item>
+        <item name="storiesHeaderColor">@color/lightBackground</item>
         <item name="colorControlHighlight">#20000000</item>
         <item name="snackbarTextViewStyle">@style/snackbarTextStyleLight</item>
         <item name="android:textViewStyle">@style/ProductSansTextViewStyle</item>
@@ -132,6 +140,7 @@
         <item name="alertDialogTheme">@style/AlertDialogMaterialStyle</item>
         <item name="dialogCornerRadius">28dp</item>
         <item name="switchPreferenceCompatStyle">@style/MaterialSwitchPreferenceCompat</item>
+        <item name="appBarLayoutStyle">@style/customAppBarLayoutStyle</item>
     </style>
 
     <style name="AppThemeMaterialLight" parent="AppThemeLight">
@@ -146,7 +155,7 @@
 
         <item name="android:windowBackground">@color/material_you_neutral_50</item>
         <item name="android:colorBackground">@color/material_you_neutral_50</item>
-
+        <item name="storiesHeaderColor">@color/material_you_neutral_50</item>
         <item name="android:statusBarColor">@color/material_you_neutral_50</item>
 
         <item name="materialAlertDialogTheme">@style/AlertDialogMaterialStyle</item>
@@ -156,6 +165,7 @@
     <style name="AppThemeWhite" parent="@style/AppThemeLight">
         <item name="android:windowBackground">@color/whiteBackground</item>
         <item name="android:colorBackground">@color/whiteBackground</item>
+        <item name="storiesHeaderColor">@color/whiteBackground</item>
         <item name="android:statusBarColor">@color/whiteStatusBarColor</item>
         <item name="colorSurfaceContainerHigh">@color/whiteBackground</item>
 
@@ -165,13 +175,12 @@
     </style>
 
 
-
     <style name="Theme.Swipe.Back.NoActionBar" parent="AppTheme">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
-    <style name="ThemeSwipeBackNoActionBarMaterialDayNight" parent="ThemeSwipeBackNoActionBarMaterialLight"></style>
+    <style name="ThemeSwipeBackNoActionBarMaterialDayNight" parent="ThemeSwipeBackNoActionBarMaterialLight" />
 
     <style name="ThemeSwipeBackNoActionBarMaterialDark" parent="@style/AppThemeMaterialDark">
         <item name="android:windowIsTranslucent">true</item>
@@ -207,6 +216,5 @@
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
-    <style name="CommentsDefaultTheme" parent="ThemeSwipeBackNoActionBarMaterialDayNight"/>
-
+    <style name="CommentsDefaultTheme" parent="ThemeSwipeBackNoActionBarMaterialDayNight" />
 </resources>

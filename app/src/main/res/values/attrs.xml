@@ -11,7 +11,7 @@
     <attr name="selfCommentColor" format="reference"/>
     <attr name="commentCountIndicatorColor" format="reference"/>
     <attr name="secondaryTextColor" format="reference"/>
-
+    <attr name="storiesHeaderColor" format="reference|color" />
     <declare-styleable name="SwipeBackLayout">
         <attr name="swipeBackFactor" format="float"/>
         <attr name="maskAlpha" format="integer"/>
