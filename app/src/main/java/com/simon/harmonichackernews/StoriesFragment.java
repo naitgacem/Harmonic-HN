@@ -66,6 +66,7 @@ public class StoriesFragment extends Fragment {
     private final static long CLICK_INTERVAL = 350;
     private final String TAG = "StoriesFragment:";
     private final Object requestTag = new Object();
+    public OnBackPressedCallback backPressedCallback;
     FragmentStoriesBinding binding;
     long lastLoaded = 0;
     long lastClick = 0;
@@ -82,8 +83,7 @@ public class StoriesFragment extends Fragment {
     private ArrayList<String> filterDomains;
     private int minimumScore;
     private boolean hideJobs, alwaysOpenComments, hideClicked;
-    private int loadedTo = 0;
-    public OnBackPressedCallback backPressedCallback;
+    private int loadedTo = -1; //index of last item fetched
 
     public StoriesFragment() {
         super();
@@ -124,7 +124,6 @@ public class StoriesFragment extends Fragment {
             attemptRefresh();
             recyclerView.smoothScrollToPosition(0);
         });
-
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             int lastVisibleItem;
 
@@ -136,7 +135,7 @@ public class StoriesFragment extends Fragment {
                     lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition();
 
                     int visibleThreshold = 17;
-                    for (int i = loadedTo; i < Math.min(lastVisibleItem + visibleThreshold, stories.size()); i++) {
+                    for (int i = loadedTo + 1; i < Math.min(lastVisibleItem + visibleThreshold, stories.size()); i++) {
                         loadedTo = i;
                         loadStory(stories.get(i), 0);
                     }
@@ -174,7 +173,7 @@ public class StoriesFragment extends Fragment {
     }
 
     private void handleBackPress() {
-        backPressedCallback = new OnBackPressedCallback(false){
+        backPressedCallback = new OnBackPressedCallback(false) {
             @Override
             public void handleOnBackPressed() {
                 attemptRefresh();
@@ -191,11 +190,7 @@ public class StoriesFragment extends Fragment {
                 search(result);
             }
         });
-        requireActivity().getSupportFragmentManager().beginTransaction()
-                        .setReorderingAllowed(true)
-                        .add(R.id.main_fragment_stories_container, SearchFragment.class, null)
-                        .addToBackStack("search")
-                        .commit();
+        requireActivity().getSupportFragmentManager().beginTransaction().setReorderingAllowed(true).add(R.id.main_fragment_stories_container, SearchFragment.class, null).addToBackStack("search").commit();
 
     }
 
@@ -203,10 +198,10 @@ public class StoriesFragment extends Fragment {
         var ctx = requireContext();
         //--------------------------------------------------------------------------------------------//
         // SETUP THE HEADER HEIGHT
-        if(!SettingsUtils.shouldUseCompactHeader(getContext())){
+        if (!SettingsUtils.shouldUseCompactHeader(getContext())) {
             TypedValue typedValue = new TypedValue();
             Resources.Theme theme = ctx.getTheme();
-            theme.resolveAttribute(com.google.android.material.R.attr.collapsingToolbarLayoutMediumSize,typedValue, true);
+            theme.resolveAttribute(com.google.android.material.R.attr.collapsingToolbarLayoutMediumSize, typedValue, true);
 
             var params = binding.topBar.getLayoutParams();
             params.height = TypedValue.complexToDimensionPixelSize(typedValue.data, getResources().getDisplayMetrics());
@@ -251,19 +246,7 @@ public class StoriesFragment extends Fragment {
     }
 
     private void setupAdapter() {
-        adapter = new StoryRecyclerViewAdapter(
-                stories,
-                SettingsUtils.shouldShowPoints(getContext()),
-                SettingsUtils.shouldShowCommentsCount(getContext()),
-                SettingsUtils.shouldUseCompactView(getContext()),
-                SettingsUtils.shouldShowThumbnails(getContext()),
-                SettingsUtils.shouldShowIndex(getContext()),
-                SettingsUtils.shouldUseLeftAlign(getContext()),
-                SettingsUtils.getPreferredHotness(getContext()),
-                SettingsUtils.getPreferredFaviconProvider(getContext()),
-                null,
-                getPreferredTypeIndex()
-        );
+        adapter = new StoryRecyclerViewAdapter(stories, SettingsUtils.shouldShowPoints(getContext()), SettingsUtils.shouldShowCommentsCount(getContext()), SettingsUtils.shouldUseCompactView(getContext()), SettingsUtils.shouldShowThumbnails(getContext()), SettingsUtils.shouldShowIndex(getContext()), SettingsUtils.shouldUseLeftAlign(getContext()), SettingsUtils.getPreferredHotness(getContext()), SettingsUtils.getPreferredFaviconProvider(getContext()), null, getPreferredTypeIndex());
 
         adapter.setOnLinkClickListener(position -> {
             if (position == RecyclerView.NO_POSITION) {
@@ -467,7 +450,7 @@ public class StoriesFragment extends Fragment {
                 if (!JSONParser.updateStoryWithHNJson(response, story)) {
                     stories.remove(story);
                     adapter.notifyItemRemoved(index);
-                    loadedTo = Math.max(0, loadedTo - 1);
+                    loadedTo = Math.max(-1, loadedTo - 1);
                     return;
                 }
 
@@ -502,7 +485,7 @@ public class StoriesFragment extends Fragment {
                 if (story.score < minimumScore) {
                     stories.remove(story);
                     adapter.notifyItemRemoved(index);
-                    loadedTo = Math.max(0, loadedTo - 1);
+                    loadedTo = Math.max(-1, loadedTo - 1);
                     return;
                 }
 
@@ -594,7 +577,7 @@ public class StoriesFragment extends Fragment {
         if (adapter.type == SettingsUtils.getBookmarksIndex(getResources())) {
             //lets load bookmarks instead - or rather add empty stories with correct id:s and start loading them
             adapter.notifyItemRangeRemoved(0, stories.size());
-            loadedTo = 0;
+            loadedTo = -1;
 
             stories.clear();
 
@@ -622,11 +605,10 @@ public class StoriesFragment extends Fragment {
             try {
                 JSONArray jsonArray = new JSONArray(response);
 
-                loadedTo = 0;
-
-                adapter.notifyItemRangeRemoved(0, stories.size());
-
+                loadedTo = -1;
+                var tempSize = stories.size();
                 stories.clear();
+                adapter.notifyItemRangeRemoved(0, tempSize);
 
                 for (int i = 0; i < jsonArray.length(); i++) {
                     int id = Integer.parseInt(jsonArray.get(i).toString());
