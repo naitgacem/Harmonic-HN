@@ -191,8 +191,11 @@ public class StoriesFragment extends Fragment {
                 search(result);
             }
         });
-
-        getParentFragmentManager().beginTransaction().setReorderingAllowed(true).add(R.id.main_fragment_stories_container, SearchFragment.class, null).addToBackStack("search").commit();
+        getParentFragmentManager().beginTransaction()
+                        .setReorderingAllowed(true)
+                        .add(R.id.main_fragment_stories_container, SearchFragment.class, null)
+                        .addToBackStack("search")
+                        .commit();
 
     }
 

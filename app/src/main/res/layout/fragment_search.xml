@@ -1,27 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/SearchFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:fitsSystemWindows="true"
     android:transitionGroup="true"
-    android:id="@+id/SearchFragment"
-    android:fitsSystemWindows="true">
+    >
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:liftOnScroll="true"
-        >
-
+        android:layout_height="wrap_content">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/search_normal_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
             app:navigationIcon="@drawable/ic_action_back">
 
             <com.google.android.material.textfield.TextInputLayout
@@ -48,10 +42,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
         </com.google.android.material.appbar.MaterialToolbar>
-
-
-
     </com.google.android.material.appbar.AppBarLayout>
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

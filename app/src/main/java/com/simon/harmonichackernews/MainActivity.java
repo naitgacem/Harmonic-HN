@@ -37,6 +37,7 @@ public class MainActivity extends BaseActivity implements StoriesFragment.StoryC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .setReorderingAllowed(true)
@@ -51,7 +52,6 @@ public class MainActivity extends BaseActivity implements StoriesFragment.StoryC
 
         ThemeUtils.setupTheme(this);
 
-        setContentView(R.layout.activity_main);
 
         updateFragmentLayout();
 
