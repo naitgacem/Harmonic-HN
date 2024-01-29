@@ -560,7 +560,7 @@ public class StoriesFragment extends Fragment {
     public void attemptRefresh() {
         backPressedCallback.setEnabled(false);
         hideUpdateButton();
-
+        binding.loadingSpinner.hide();
         binding.storiesHeaderSpinner.setVisibility(View.VISIBLE);
         binding.searchTitle.setVisibility(View.GONE);
 
@@ -675,6 +675,7 @@ public class StoriesFragment extends Fragment {
         }
         binding.storiesHeaderSpinner.setVisibility(View.GONE);
         binding.searchTitle.setVisibility(View.VISIBLE);
+        binding.loadingSpinner.show();
         String displayQuery = String.format(requireContext().getString(R.string.search_query_display), query);
         binding.searchTitleQuery.setText(displayQuery);
         backPressedCallback.setEnabled(true);
@@ -685,17 +686,15 @@ public class StoriesFragment extends Fragment {
         swipeRefreshLayout.setEnabled(true);
         swipeRefreshLayout.setRefreshing(true);
         stories.clear();
-        adapter.notifyDataSetChanged();
+        adapter.notifyDataSetChanged(); //necessary to avoid crash with RV
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, response -> {
             swipeRefreshLayout.setRefreshing(false);
             try {
                 int oldSize = stories.size();
-
-
                 adapter.notifyItemRangeRemoved(0, oldSize);
 
                 stories.addAll(JSONParser.algoliaJsonToStories(response));
-
+                binding.loadingSpinner.hide();
                 Iterator<Story> iterator = stories.iterator();
                 while (iterator.hasNext()) {
                     Story story = iterator.next();
