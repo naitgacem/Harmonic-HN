@@ -1,27 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/SearchFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:transitionGroup="true"
-    >
+    android:transitionGroup="true">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/search_top_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/search_top_bar"
-        android:background="?android:colorBackground"
-        android:layout_gravity="top">
+        android:layout_gravity="top"
+        android:background="?android:colorBackground">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/search_normal_toolbar"
+            style="@style/Widget.Material3.SearchView.Toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:navigationIcon="@drawable/ic_action_back"
-            style="@style/Widget.Material3.SearchView.Toolbar">
+            app:navigationIcon="@drawable/ic_action_back">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
@@ -52,21 +50,69 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:background="?android:colorBackground"
-        >
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <TextView
-                android:layout_width="match_parent"
+            android:paddingTop="8dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            >
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="This is the latest search"/>
-            <TextView
-                android:layout_width="match_parent"
+                app:singleSelection="false"
+                android:id="@+id/post_type_toggle_group">
+
+                <Button
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Story" />
+
+                <Button
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Comment" />
+
+                <Button
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="poll" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="This is the before last search"/>
+                app:singleSelection="false"
+                android:id="@+id/post_special_tag_toggle_group"
+                >
+
+                <Button
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Show HN" />
+
+                <Button
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ask HN" />
+
+                <Button
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Front page" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
 
         </LinearLayout>
     </FrameLayout>
