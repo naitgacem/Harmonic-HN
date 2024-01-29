@@ -187,7 +187,18 @@ public class StoriesFragment extends Fragment {
             @Override
             public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle bundle) {
                 String result = bundle.getString("query_term");
-                search(result);
+                ArrayList<String> tags = bundle.getStringArrayList("tags");
+                StringBuilder tagsStr = new StringBuilder();
+                if(tags == null || tags.isEmpty()){
+                    tagsStr = new StringBuilder();
+                } else {
+                    tagsStr.append("(");
+                    for(var searchTag : tags ){
+                        tagsStr.append(searchTag).append(",");
+                    }
+                    tagsStr.append(")");
+                }
+                search(result, tagsStr.toString());
             }
         });
         requireActivity().getSupportFragmentManager().beginTransaction().setReorderingAllowed(true).add(R.id.main_fragment_stories_container, SearchFragment.class, null).addToBackStack("search").commit();
@@ -653,7 +664,7 @@ public class StoriesFragment extends Fragment {
         loadAlgolia("https://hn.algolia.com/api/v1/search?tags=story&numericFilters=created_at_i>" + start_i + "&hitsPerPage=200");
     }
 
-    private void search(String query) {
+    private void search(String query, String tagsString) {
         getParentFragmentManager().popBackStack();
         if (query == null || query.isEmpty()) {
             return;
@@ -664,7 +675,8 @@ public class StoriesFragment extends Fragment {
         String displayQuery = String.format(requireContext().getString(R.string.search_query_display), query);
         binding.searchTitleQuery.setText(displayQuery);
         backPressedCallback.setEnabled(true);
-        loadAlgolia("https://hn.algolia.com/api/v1/search_by_date?query=" + query + "&tags=story&hitsPerPage=200");
+        String tags = tagsString.isEmpty() ? "story" : tagsString;
+        loadAlgolia("https://hn.algolia.com/api/v1/search_by_date?query=" + query + "&tags=" + tags + "&hitsPerPage=200");
     }
 
     private void loadAlgolia(String url) {
