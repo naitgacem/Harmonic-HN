@@ -191,7 +191,7 @@ public class StoriesFragment extends Fragment {
                 search(result);
             }
         });
-        getParentFragmentManager().beginTransaction()
+        requireActivity().getSupportFragmentManager().beginTransaction()
                         .setReorderingAllowed(true)
                         .add(R.id.main_fragment_stories_container, SearchFragment.class, null)
                         .addToBackStack("search")

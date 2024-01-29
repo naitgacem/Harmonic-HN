@@ -55,13 +55,13 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="dutch"
+                            android:text=""
                             android:layout_gravity="center_vertical"
                             android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
                             android:maxLines="1"
                             android:ellipsize="end"
                             android:id="@+id/search_title_query"
-                            android:layout_marginStart="16dp"/>
+                            android:layout_marginStart="4dp"/>
                     </LinearLayout>
                     <ImageButton
                         android:id="@+id/stories_header_more"
