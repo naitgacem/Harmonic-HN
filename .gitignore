@@ -6,7 +6,7 @@
 *.iml
 misc.xml
 deploymentTargetDropDown.xml
-
+app/release/**
 .DS_Store
 /build
 /captures
