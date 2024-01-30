@@ -197,10 +197,14 @@ public class StoriesFragment extends Fragment {
             public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle bundle) {
                 String result = bundle.getString("query_term");
                 ArrayList<String> tags = bundle.getStringArrayList("tags");
+                String username = bundle.getString("username");
                 StringBuilder tagsStr = new StringBuilder();
-                if(tags == null || tags.isEmpty()){
-                    tagsStr = new StringBuilder();
-                } else {
+                if(username != null){
+                    tagsStr.append("author_");
+                    tagsStr.append(username);
+                    tagsStr.append(",");
+                }
+                if (tags != null && !tags.isEmpty()) {
                     tagsStr.append("(");
                     for(var searchTag : tags ){
                         tagsStr.append(searchTag).append(",");
@@ -680,7 +684,7 @@ public class StoriesFragment extends Fragment {
 
     private void search(String query, String tagsString) {
         getParentFragmentManager().popBackStack();
-        if (query == null || query.isEmpty()) {
+        if (query == null) {
             return;
         }
         binding.storiesHeaderSpinner.setVisibility(View.GONE);
@@ -689,8 +693,19 @@ public class StoriesFragment extends Fragment {
         String displayQuery = String.format(requireContext().getString(R.string.search_query_display), query);
         binding.searchTitleQuery.setText(displayQuery);
         backPressedCallback.setEnabled(true);
-        String tags = tagsString.isEmpty() ? "story" : tagsString;
-        loadAlgolia("https://hn.algolia.com/api/v1/search_by_date?query=" + query + "&tags=" + tags + "&hitsPerPage=200");
+        StringBuilder url = new StringBuilder("https://hn.algolia.com/api/v1/search_by_date?");
+        if(!query.isEmpty()){
+            url.append("query=");
+            url.append(query);
+        }
+        url.append("&tags=");
+        if(tagsString.isEmpty()){
+            url.append("story");
+        } else {
+            url.append(tagsString);
+        }
+        url.append("&hitsPerPage=200");
+        loadAlgolia( url.toString() );
     }
 
     private void loadAlgolia(String url) {

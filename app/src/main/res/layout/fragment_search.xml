@@ -11,8 +11,7 @@
         android:id="@+id/search_top_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:background="?android:colorBackground">
+        android:layout_gravity="top">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/search_normal_toolbar"
@@ -114,6 +113,30 @@
 
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:paddingHorizontal="32dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/username_edit_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="username"
+                    android:imeOptions="actionSearch|flagNoExtractUi"
+                    android:inputType="textFilter"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="0dp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.button.MaterialButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/search_button"
+                android:text="Search"
+                />
         </LinearLayout>
     </FrameLayout>
 

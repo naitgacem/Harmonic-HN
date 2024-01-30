@@ -98,6 +98,7 @@ public class SearchFragment extends Fragment {
                 }
             }
         });
+        binding.searchButton.setOnClickListener(v -> sendResult());
     }
     private void updateTag(boolean isChecked, String tag){
         if(isChecked){
@@ -110,11 +111,13 @@ public class SearchFragment extends Fragment {
         Bundle result = new Bundle();
         result.putString("query_term", searchQuery);
         result.putStringArrayList("tags", tags);
+        if(binding.usernameEditText.getText() != null) {
+            result.putString("username", binding.usernameEditText.getText().toString());
+        }
         getParentFragmentManager().setFragmentResult("search_query", result);
         return true;
     }
     private void dismissSearch(View v){
-        searchQuery = "";
-        sendResult();
+        getParentFragmentManager().popBackStack();
     }
 }
