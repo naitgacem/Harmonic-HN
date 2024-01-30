@@ -55,16 +55,15 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="8dp"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            >
+            android:paddingTop="8dp">
 
             <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/post_type_toggle_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleSelection="false"
-                android:id="@+id/post_type_toggle_group">
+                app:singleSelection="false">
 
                 <Button
                     style="?attr/materialButtonOutlinedStyle"
@@ -87,11 +86,10 @@
             </com.google.android.material.button.MaterialButtonToggleGroup>
 
             <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/post_special_tag_toggle_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleSelection="false"
-                android:id="@+id/post_special_tag_toggle_group"
-                >
+                app:singleSelection="false">
 
                 <Button
                     style="?attr/materialButtonOutlinedStyle"
@@ -118,6 +116,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:paddingHorizontal="32dp">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/username_edit_text"
                     android:layout_width="match_parent"
@@ -130,13 +129,33 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
+                android:dividerPadding="16.dp"
+                android:gravity="center_horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Start date"
+                    android:padding="16dp"/>
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="End date"
+                    android:padding="16dp"/>
+            </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/search_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/search_button"
-                android:text="Search"
-                />
+                android:text="Search" />
         </LinearLayout>
     </FrameLayout>
 
