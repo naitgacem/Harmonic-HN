@@ -199,14 +199,14 @@ public class StoriesFragment extends Fragment {
                 ArrayList<String> tags = bundle.getStringArrayList("tags");
                 String username = bundle.getString("username");
                 StringBuilder tagsStr = new StringBuilder();
-                if(!TextUtils.isEmpty(username)){
+                if (!TextUtils.isEmpty(username)) {
                     tagsStr.append("author_");
                     tagsStr.append(username);
                     tagsStr.append(",");
                 }
                 if (tags != null && !tags.isEmpty()) {
                     tagsStr.append("(");
-                    for(var searchTag : tags ){
+                    for (var searchTag : tags) {
                         tagsStr.append(searchTag).append(",");
                     }
                     tagsStr.append(")");
@@ -325,27 +325,38 @@ public class StoriesFragment extends Fragment {
                     return false;
                 }
 
-                Context context = v.getContext();
 
+                Context context = v.getContext();
                 PopupMenu popupMenu = new PopupMenu(context, v);
 
                 Story story = stories.get(position);
-                boolean oldClicked = story.clicked;
 
-                popupMenu.getMenu().add(oldClicked ? "Mark as unread" : "Mark as read").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        story.clicked = !oldClicked;
-                        if (oldClicked) {
-                            clickedIds.remove(story.id);
-                        } else {
-                            clickedIds.add(story.id);
+                if (adapter.type == SettingsUtils.getBookmarksIndex(getResources())) {
+                    popupMenu.getMenu().add("Remove from bookmarks").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(@NonNull MenuItem item) {
+                            Utils.removeBookmark(context, story.id);
+                            stories.remove(story);
+                            adapter.notifyItemRemoved(position);
+                            return true;
                         }
-
-                        adapter.notifyItemChanged(position);
-                        return true;
-                    }
-                });
+                    });
+                } else {
+                    boolean oldClicked = story.clicked;
+                    popupMenu.getMenu().add(oldClicked ? "Mark as unread" : "Mark as read").setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(@NonNull MenuItem item) {
+                            story.clicked = !oldClicked;
+                            if (oldClicked) {
+                                clickedIds.remove(story.id);
+                            } else {
+                                clickedIds.add(story.id);
+                            }
+                            adapter.notifyItemChanged(position);
+                            return true;
+                        }
+                    });
+                }
                 popupMenu.show();
                 return false;
             }
@@ -694,18 +705,18 @@ public class StoriesFragment extends Fragment {
         binding.searchTitleQuery.setText(displayQuery);
         backPressedCallback.setEnabled(true);
         StringBuilder url = new StringBuilder("https://hn.algolia.com/api/v1/search_by_date?");
-        if(!query.isEmpty()){
+        if (!query.isEmpty()) {
             url.append("query=");
             url.append(query);
         }
         url.append("&tags=");
-        if(tagsString.isEmpty()){
+        if (tagsString.isEmpty()) {
             url.append("story");
         } else {
             url.append(tagsString);
         }
         url.append("&hitsPerPage=200");
-        loadAlgolia( url.toString() );
+        loadAlgolia(url.toString());
     }
 
     private void loadAlgolia(String url) {

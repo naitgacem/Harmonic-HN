@@ -48,6 +48,7 @@ import androidx.webkit.WebViewFeature;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 import com.simon.harmonichackernews.CommentsFragment;
 import com.simon.harmonichackernews.ComposeActivity;
 import com.simon.harmonichackernews.R;
@@ -192,7 +193,12 @@ public class ViewUtils {
                             UserActions.unvote(ctx, comment.id, fragment.getParentFragmentManager());
                     case VOTE_DOWN ->
                             UserActions.downvote(ctx, comment.id, fragment.getParentFragmentManager());
-                    case BOOKMARK -> Utils.addBookmark(ctx, comment.id);
+                    case BOOKMARK -> {
+                        Utils.addBookmark(ctx, comment.id);
+                        Snackbar sb = Snackbar.make(ctx, fragment.requireView(), "Comment Bookmarked", Snackbar.LENGTH_SHORT);
+                        ViewCompat.setElevation(sb.getView(), Utils.pxFromDp(fragment.getResources(), 24));
+                        sb.show();
+                    }
                     case PARENT_COMMENT -> {
                         int parentPos = comments.indexOf(comment.parentComment);
                         smoothScroller.setTargetPosition(parentPos);
