@@ -199,7 +199,7 @@ public class StoriesFragment extends Fragment {
                 ArrayList<String> tags = bundle.getStringArrayList("tags");
                 String username = bundle.getString("username");
                 StringBuilder tagsStr = new StringBuilder();
-                if(username != null){
+                if(!TextUtils.isEmpty(username)){
                     tagsStr.append("author_");
                     tagsStr.append(username);
                     tagsStr.append(",");

@@ -58,7 +58,6 @@ public class SearchFragment extends Fragment {
         searchBar.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
-                searchQuery = searchBar.getText().toString();
                 return sendResult();
             }
         });
@@ -109,7 +108,9 @@ public class SearchFragment extends Fragment {
     }
     private boolean sendResult() {
         Bundle result = new Bundle();
-        result.putString("query_term", searchQuery);
+        if(binding.searchEditText.getText() != null){
+            result.putString("query_term", binding.searchEditText.getText().toString());
+        }
         result.putStringArrayList("tags", tags);
         if(binding.usernameEditText.getText() != null) {
             result.putString("username", binding.usernameEditText.getText().toString());
