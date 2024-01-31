@@ -219,6 +219,7 @@ public class StoriesFragment extends Fragment {
                 setReorderingAllowed(true).
                 add(R.id.main_fragment_stories_container, SearchFragment.class, null)
                 .addToBackStack("search")
+                .hide(this)
                 .commit();
 
     }

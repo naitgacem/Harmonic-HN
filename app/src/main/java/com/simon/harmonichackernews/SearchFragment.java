@@ -67,15 +67,9 @@ public class SearchFragment extends Fragment {
             public void onButtonChecked(MaterialButtonToggleGroup group, int checkedId, boolean isChecked) {
                 int index = group.indexOfChild(group.findViewById(checkedId));
                 switch (index){
-                    case 0 -> {
-                        updateTag(isChecked, SHOW_HN);
-                    }
-                    case 1 -> {
-                        updateTag(isChecked, ASK_HN);
-                    }
-                    case 2 -> {
-                        updateTag(isChecked, FRONT_PAGE);
-                    }
+                    case 0 -> updateTag(isChecked, SHOW_HN);
+                    case 1 -> updateTag(isChecked, ASK_HN);
+                    case 2 -> updateTag(isChecked, FRONT_PAGE);
                 }
             }
         });
@@ -85,15 +79,9 @@ public class SearchFragment extends Fragment {
             public void onButtonChecked(MaterialButtonToggleGroup group, int checkedId, boolean isChecked) {
                 int index = group.indexOfChild(group.findViewById(checkedId));
                 switch (index){
-                    case 0 -> {
-                        updateTag(isChecked, STORY);
-                    }
-                    case 1 -> {
-                        updateTag(isChecked, COMMENT);
-                    }
-                    case 2 -> {
-                        updateTag(isChecked, POLL);
-                    }
+                    case 0 -> updateTag(isChecked, STORY);
+                    case 1 -> updateTag(isChecked, COMMENT);
+                    case 2 -> updateTag(isChecked, POLL);
                 }
             }
         });
