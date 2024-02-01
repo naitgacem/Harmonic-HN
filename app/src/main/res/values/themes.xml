@@ -27,7 +27,7 @@
         <item name="storiesHeaderColor">@color/material_you_neutral_900</item>
         <item name="colorControlHighlight">#40ffffff</item>
 
-        <item name="colorPrimary">@color/material_you_third_400</item>
+        <item name="colorPrimary">@color/design_default_color_primary_variant</item>
         <item name="colorPrimaryContainer">@color/material_you_third_700</item>
         <item name="colorOnPrimary">@color/material_you_neutral_100</item>
         <item name="colorSurfaceContainerHigh">@color/material_you_neutral_variant20</item>
@@ -148,8 +148,7 @@
         <item name="commentCountIndicatorColor">@color/material_you_600</item>
         <item name="popupMenuBackground">@drawable/popup_background_material</item>
         <item name="secondaryTextColor">@color/material_you_secondary_40</item>
-
-        <item name="colorPrimary">@color/material_you_third_400</item>
+        <item name="colorPrimary">@color/material_you_primary60</item>
         <item name="colorPrimaryContainer">@color/material_you_third_700</item>
         <item name="colorSurfaceContainerHigh">@color/material_you_neutral_variant95</item>
 

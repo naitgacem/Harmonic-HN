@@ -104,7 +104,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:singleSelection="false"
-                android:paddingBottom="16dp">
+                android:paddingBottom="16dp"
+                >
 
                 <Button
                     style="?attr/materialButtonOutlinedStyle"
@@ -191,7 +192,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Search"
-                app:backgroundTint="@color/colorPrimaryPurple"
+                style="@style/Widget.Material3.Button"
                 android:layout_marginVertical="16dp"/>
 
             <LinearLayout
