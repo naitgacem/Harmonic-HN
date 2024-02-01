@@ -57,13 +57,20 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:paddingTop="8dp">
-
+            android:paddingVertical="16dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Post type, default is story:"
+                style="@style/TextAppearance.Material3.BodyMedium"
+                android:paddingHorizontal="32dp"
+                />
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/post_type_toggle_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleSelection="false">
+                app:singleSelection="false"
+                android:paddingTop="16dp">
 
                 <Button
                     style="?attr/materialButtonOutlinedStyle"
@@ -84,12 +91,21 @@
                     android:text="poll" />
 
             </com.google.android.material.button.MaterialButtonToggleGroup>
-
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Post tag if applicable:"
+                style="@style/TextAppearance.Material3.BodyMedium"
+                android:paddingHorizontal="32dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="8dp"
+                />
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/post_special_tag_toggle_group"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleSelection="false">
+                app:singleSelection="false"
+                android:paddingBottom="16dp">
 
                 <Button
                     style="?attr/materialButtonOutlinedStyle"
@@ -110,24 +126,44 @@
                     android:text="Front page" />
 
             </com.google.android.material.button.MaterialButtonToggleGroup>
-
-            <com.google.android.material.textfield.TextInputLayout
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="Filter by a single username"
+                style="@style/TextAppearance.Material3.BodyMedium"
+                android:paddingHorizontal="32dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="8dp"
+                />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="1"
                 android:gravity="center_horizontal"
-                android:paddingHorizontal="32dp">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/username_edit_text"
-                    android:layout_width="match_parent"
+                android:baselineAligned="false">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:hint="username"
-                    android:imeOptions="actionSearch|flagNoExtractUi"
-                    android:inputType="textFilter"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="0dp" />
+                    android:gravity="center_horizontal"
+                    app:boxCornerRadiusBottomEnd="10dp"
+                    app:boxCornerRadiusTopEnd="10dp"
+                    app:boxCornerRadiusBottomStart="10dp"
+                    app:boxCornerRadiusTopStart="10dp"
+                    android:layout_weight=".6"
+                    >
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/username_edit_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="username"
+                        android:inputType="text"
+                        />
 
-            </com.google.android.material.textfield.TextInputLayout>
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+
+
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -155,7 +191,8 @@
                 android:id="@+id/search_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Search" />
+                android:text="Search"
+                android:layout_marginVertical="16dp"/>
         </LinearLayout>
     </FrameLayout>
 
