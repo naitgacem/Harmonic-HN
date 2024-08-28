@@ -27,4 +27,20 @@
     </string-array>
 
     <string name="search_query_display">"\"%s\""</string>
+    <string name="loading_failed">Loading failed :(</string>
+    <string name="no_results_found">No results found :(</string>
+    <string name="search_stories">Search stories</string>
+    <string name="story">Story</string>
+    <string name="comment">Comment</string>
+    <string name="poll">Poll</string>
+    <string name="show_hn">Show HN</string>
+    <string name="ask_hn">Ask HN</string>
+    <string name="front_page">Front page</string>
+    <string name="poll_option">Poll option</string>
+    <string name="currently_on_front_page">Currently on the front page</string>
+    <string name="username">Username</string>
+    <string name="story_index">%1$d•</string>
+    <string name="unknown_host">Unknown host</string>
+    <string name="story_meta">{0,choice,0# 0 points|1# 1 point|1&lt;{0,number,integer} points}. {1}. {2}</string>
+    <string name="dot">•</string>
 </resources>

@@ -39,7 +39,7 @@ import java.util.List;
 
 public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private final List<Story> stories;
+    public List<Story> stories;
     private ClickListener linkClickListener;
     private ClickListener commentClickListener;
     private ClickListener commentRepliesClickListener;

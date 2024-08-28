@@ -318,7 +318,7 @@ public class Utils {
 
     public static boolean isFirstAppStart(Context ctx) {
         SharedPreferences sharedPref = ctx.getSharedPreferences(GLOBAL_SHARED_PREFERENCES_KEY, Context.MODE_PRIVATE);
-        if (sharedPref.getBoolean(KEY_SHARED_PREFERENCES_FIRST_TIME, true) && SettingsUtils.readIntSetFromSharedPreferences(ctx, Utils.KEY_SHARED_PREFERENCES_CLICKED_IDS).size() == 0) {
+        if (sharedPref.getBoolean(KEY_SHARED_PREFERENCES_FIRST_TIME, true) && SettingsUtils.readIntSetFromSharedPreferences(ctx, Utils.KEY_SHARED_PREFERENCES_CLICKED_IDS).isEmpty()) {
             sharedPref.edit().putBoolean(KEY_SHARED_PREFERENCES_FIRST_TIME, false).apply();
             return true;
         }

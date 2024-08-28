@@ -73,7 +73,7 @@
             <TextView
                 android:id="@+id/story_title"
                 android:layout_width="match_parent"
-                android:text="New algorithm breaks speed limit for solving linear equations"
+                tools:text="New algorithm breaks speed limit for solving linear equations"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="2dp"
                 android:textSize="17.5sp"
@@ -102,7 +102,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:textColor="?attr/textColorDefault"
-                    android:text="53 points • quantamagazine.org • 2 hrs"
+                    tools:text="53 points • quantamagazine.org • 2 hrs"
                     android:fontFamily="@font/product_sans"
                     android:textSize="13sp" />
 
@@ -129,7 +129,7 @@
             android:src="@drawable/ic_action_comment"   />
 
         <TextView
-            android:text="18"
+            tools:text="18"
             android:fontFamily="@font/product_sans"
             android:textStyle="bold"
             android:textColor="?attr/storyColorNormal"

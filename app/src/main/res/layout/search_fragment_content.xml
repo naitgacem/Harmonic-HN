@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:paddingVertical="8dp">
+
+    <TextView
+        android:id="@+id/post_type_header"
+        style="@style/TextAppearance.Material3.BodyMedium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Post type, default is story:" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/post_type_chip_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="16dp">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/story_chip"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/story" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/comment_chip"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/comment" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/poll_chip"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/poll" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/poll_opt_chip"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/poll_option" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/show_hn_chip"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/show_hn" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/ask_hn_chip"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ask_hn" />
+
+    </com.google.android.material.chip.ChipGroup>
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/front_page_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/currently_on_front_page"
+        android:textAlignment="textStart" />
+
+    <TextView
+        style="@style/TextAppearance.Material3.BodyMedium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="32dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp"
+        android:text="Filter by a single username" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".6"
+            android:gravity="center_horizontal"
+            app:boxCornerRadiusBottomEnd="10dp"
+            app:boxCornerRadiusBottomStart="10dp"
+            app:boxCornerRadiusTopEnd="10dp"
+            app:boxCornerRadiusTopStart="10dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/username_edit_text"
+                android:hint="@string/username"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:dividerPadding="16.dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:visibility="gone">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="Start date" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="End date" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="32dp"
+        android:visibility="gone">
+
+        <TextView
+            style="@style/TextAppearance.Material3.BodyLarge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="8dp"
+            android:paddingVertical="16dp"
+            app:drawableStartCompat="@drawable/ic_history"
+            tools:text="Dutch" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -29,16 +29,11 @@ public class FaviconLoader {
     }
 
     private static String getFaviconUrl(String host, String faviconProvider) {
-        switch (faviconProvider) {
-            case "Favicon kit":
-                return "https://api.faviconkit.com/" + host;
-            case "Google":
-                return "https://www.google.com/s2/favicons?domain="+ host + "&sz=128";
-            case "DuckDuckGo":
-                return "https://icons.duckduckgo.com/ip3/" + host + ".ico";
-            default:
-                return "https://www.google.com/s2/favicons?domain="+ host + "&sz=128";
-        }
+        return switch (faviconProvider) {
+            case "Favicon kit" -> "https://api.faviconkit.com/" + host;
+            case "DuckDuckGo" -> "https://icons.duckduckgo.com/ip3/" + host + ".ico";
+            default -> "https://www.google.com/s2/favicons?domain=" + host + "&sz=128";
+        };
     }
 
 }

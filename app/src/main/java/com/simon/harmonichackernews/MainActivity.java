@@ -26,6 +26,9 @@ import com.simon.harmonichackernews.utils.Utils;
 
 import java.util.ArrayList;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class MainActivity extends BaseActivity implements StoriesFragment.StoryClickListener {
 
     public static ArrayList<CommentsScrollProgress> commentsScrollProgresses = new ArrayList<>();
@@ -46,7 +49,7 @@ public class MainActivity extends BaseActivity implements StoriesFragment.StoryC
                     .commit();
         }
 
-        if (Utils.isFirstAppStart(this)) {
+        if (!BuildConfig.DEBUG && Utils.isFirstAppStart(this)) {
             startActivity(new Intent(this, WelcomeActivity.class));
             finish();
         }

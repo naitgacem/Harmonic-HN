@@ -1,234 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/SearchFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     android:transitionGroup="true">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/search_top_bar"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/no_results_found_textview"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="top">
+        android:layout_gravity="center"
+        android:text="@string/no_results_found"
+        android:visibility="gone" />
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/search_normal_toolbar"
-            style="@style/Widget.Material3.SearchView.Toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:navigationIcon="@drawable/ic_action_back">
+    <ProgressBar
+        android:id="@+id/loading_progressbar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:endIconContentDescription="Clear search"
-                app:endIconDrawable="@drawable/ic_action_clear"
-                app:endIconMode="clear_text"
-                app:endIconTint="?attr/colorControlNormal"
-                app:errorEnabled="false"
-                app:hintEnabled="false">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/search_edit_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:hint="Search library"
-                    android:imeOptions="actionSearch|flagNoExtractUi"
-                    android:inputType="textFilter"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="0dp" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </com.google.android.material.appbar.MaterialToolbar>
-    </com.google.android.material.appbar.AppBarLayout>
-
-
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-        <LinearLayout
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:itemCount="5"
+            tools:listitem="@layout/story_list_item" />
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:liftOnScroll="false"
+        app:statusBarForeground="?attr/colorSurface">
+
+        <com.google.android.material.search.SearchBar
+            android:id="@+id/search_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            android:paddingVertical="16dp">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Post type, default is story:"
-                style="@style/TextAppearance.Material3.BodyMedium"
-                android:paddingHorizontal="32dp"
-                />
-            <com.google.android.material.button.MaterialButtonToggleGroup
-                android:id="@+id/post_type_toggle_group"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:singleSelection="false"
-                android:paddingTop="16dp">
+            android:hint="@string/search_stories"
+            app:navigationIcon="@drawable/ic_arrow_back">
 
-                <Button
-                    style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Story" />
+        </com.google.android.material.search.SearchBar>
 
-                <Button
-                    style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Comment" />
-
-                <Button
-                    style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="poll" />
-
-            </com.google.android.material.button.MaterialButtonToggleGroup>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Post tag if applicable:"
-                style="@style/TextAppearance.Material3.BodyMedium"
-                android:paddingHorizontal="32dp"
-                android:paddingTop="16dp"
-                android:paddingBottom="8dp"
-                />
-            <com.google.android.material.button.MaterialButtonToggleGroup
-                android:id="@+id/post_special_tag_toggle_group"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:singleSelection="false"
-                android:paddingBottom="16dp"
-                >
-
-                <Button
-                    style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Show HN" />
-
-                <Button
-                    style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Ask HN" />
-
-                <Button
-                    style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Front page" />
-
-            </com.google.android.material.button.MaterialButtonToggleGroup>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Filter by a single username"
-                style="@style/TextAppearance.Material3.BodyMedium"
-                android:paddingHorizontal="32dp"
-                android:paddingTop="16dp"
-                android:paddingBottom="8dp"
-                />
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="1"
-                android:gravity="center_horizontal"
-                android:baselineAligned="false">
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    app:boxCornerRadiusBottomEnd="10dp"
-                    app:boxCornerRadiusTopEnd="10dp"
-                    app:boxCornerRadiusBottomStart="10dp"
-                    app:boxCornerRadiusTopStart="10dp"
-                    android:layout_weight=".6"
-                    >
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/username_edit_text"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="username"
-                        android:inputType="text"
-                        />
-
-                </com.google.android.material.textfield.TextInputLayout>
-            </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
 
+    <com.google.android.material.search.SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:hint="@string/search_stories"
+        app:layout_anchor="@id/search_bar">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:dividerPadding="16.dp"
-                android:gravity="center_horizontal"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                android:visibility="gone">
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="16dp"
-                    android:text="Start date" />
-
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="16dp"
-                    android:text="End date" />
-            </LinearLayout>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/search_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Search"
-                style="@style/Widget.Material3.Button"
-                android:layout_marginVertical="16dp"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:paddingHorizontal="32dp">
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Dutch"
-                    android:paddingVertical="16dp"
-                    style="@style/TextAppearance.Material3.BodyLarge"
-                    android:drawablePadding="8dp"
-                    app:drawableStartCompat="@drawable/ic_history" />
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Google"
-                    android:paddingVertical="16dp"
-                    style="@style/TextAppearance.Material3.BodyLarge"
-                    android:drawablePadding="8dp"
-                    app:drawableStartCompat="@drawable/ic_history" />
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Recent"
-                    android:paddingVertical="16dp"
-                    style="@style/TextAppearance.Material3.BodyLarge"
-                    android:drawablePadding="8dp"
-                    app:drawableStartCompat="@drawable/ic_history" />
-            </LinearLayout>
+       <include layout="@layout/search_fragment_content"
+           android:id="@+id/search_settings"/>
 
 
-        </LinearLayout>
-    </ScrollView>
-
+    </com.google.android.material.search.SearchView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,5 +1,6 @@
 package com.simon.harmonichackernews;
 
+import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
@@ -8,6 +9,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,7 +31,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.TooltipCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentResultListener;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -38,9 +40,11 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.material.transition.MaterialSharedAxis;
+import com.simon.harmonichackernews.adapters.StoryListAdapter;
 import com.simon.harmonichackernews.adapters.StoryRecyclerViewAdapter;
 import com.simon.harmonichackernews.data.Bookmark;
 import com.simon.harmonichackernews.data.Story;
+import com.simon.harmonichackernews.data.StoryType;
 import com.simon.harmonichackernews.databinding.FragmentStoriesBinding;
 import com.simon.harmonichackernews.network.JSONParser;
 import com.simon.harmonichackernews.network.NetworkComponent;
@@ -50,9 +54,9 @@ import com.simon.harmonichackernews.utils.SettingsUtils;
 import com.simon.harmonichackernews.utils.StoryUpdate;
 import com.simon.harmonichackernews.utils.Utils;
 import com.simon.harmonichackernews.utils.ViewUtils;
+import com.simon.harmonichackernews.view.search.SearchFragment;
+import com.simon.harmonichackernews.view.stories.StoriesViewModel;
 
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
@@ -62,6 +66,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class StoriesFragment extends Fragment {
     public final static String[] hnUrls = new String[]{Utils.URL_TOP, Utils.URL_NEW, Utils.URL_BEST, Utils.URL_ASK, Utils.URL_SHOW, Utils.URL_JOBS};
     private final static long CLICK_INTERVAL = 350;
@@ -78,16 +85,23 @@ public class StoriesFragment extends Fragment {
     private StoryRecyclerViewAdapter adapter;
     private List<Story> stories;
     private RequestQueue queue;
-    private LinearLayoutManager linearLayoutManager;
     private Set<Integer> clickedIds;
     private ArrayList<String> filterWords;
     private ArrayList<String> filterDomains;
     private int minimumScore;
     private boolean hideJobs, alwaysOpenComments, hideClicked;
     private int loadedTo = -1; //index of last item fetched
+    private StoriesViewModel viewModel;
+
 
     public StoriesFragment() {
         super();
+    }
+
+    public static int getPreferredTypeIndex(Context context) {
+        String[] sortingOptions = context.getResources().getStringArray(R.array.sorting_options);
+        ArrayList<CharSequence> typeAdapterList = new ArrayList<>(Arrays.asList(sortingOptions));
+        return typeAdapterList.indexOf(SettingsUtils.getPreferredStoryType(context));
     }
 
     @Nullable
@@ -95,12 +109,8 @@ public class StoriesFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         clickedIds = SettingsUtils.readIntSetFromSharedPreferences(requireContext(), Utils.KEY_SHARED_PREFERENCES_CLICKED_IDS);
 
-        setExitTransition(new MaterialSharedAxis(MaterialSharedAxis.Z, true)
-                .setDuration(600)
-        );
-        setReenterTransition(new MaterialSharedAxis(MaterialSharedAxis.Z, false)
-                .setDuration(600)
-        );
+        setExitTransition(new MaterialSharedAxis(MaterialSharedAxis.Z, true).setDuration(600));
+        setReenterTransition(new MaterialSharedAxis(MaterialSharedAxis.Z, false).setDuration(600));
 
         binding = FragmentStoriesBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -109,51 +119,68 @@ public class StoriesFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        RecyclerView.setVerboseLoggingEnabled(false);
         stories = new ArrayList<>();
+        viewModel = new ViewModelProvider(this).get(StoriesViewModel.class);
         setupAdapter();
         setupHeader();
         handleBackPress();
         recyclerView = binding.storiesRecyclerview;
         swipeRefreshLayout = binding.storiesSwipeRefresh;
         updateContainer = binding.storiesUpdateContainer;
-        linearLayoutManager = new LinearLayoutManager(getContext());
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
+        var adapter = new StoryListAdapter(requireContext(), (story) -> {
+            if (debounce()) return null;
+            story.clicked = true;
+            clickedIds.add(story.id);
+            if (alwaysOpenComments || !story.isLink) {
+                openComments(story, 0, false);
+                return null;
+            }
+            if (SettingsUtils.shouldUseIntegratedWebView(getContext())) {
+                openComments(story, 0, true);
+            } else {
+                Utils.launchCustomTab(getContext(), story.url);
+            }
+            return null;
+        }, (story -> {
+            if (debounce()) return null;
+            story.clicked = true;
+            clickedIds.add(story.id);
+            openComments(story, 0, false);
+            return null;
+        }));
 
         recyclerView.setAdapter(adapter);
 
-
-        binding.storiesHeaderSearchButton.setOnClickListener(this::onClickSearch);
-
-
-        swipeRefreshLayout.setOnRefreshListener(this::attemptRefresh);
-        ViewUtils.setUpSwipeRefreshWithStatusBarOffset(swipeRefreshLayout);
-        ViewUtils.requestApplyInsetsWhenAttached(view);
-
-        binding.storiesUpdateButton.setOnClickListener((v) -> {
-            attemptRefresh();
-            recyclerView.smoothScrollToPosition(0);
-        });
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            int lastVisibleItem;
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
 
             @Override
-            public void onScrolled(@NotNull RecyclerView recyclerView, int dx, int dy) {
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-
-                if (!adapter.searching) {
-                    lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition();
-
-                    int visibleThreshold = 17;
-                    for (int i = loadedTo + 1; i < Math.min(lastVisibleItem + visibleThreshold, stories.size()); i++) {
-                        loadedTo = i;
-                        loadStory(stories.get(i), 0);
-                    }
+                var totalItemCount = linearLayoutManager.getItemCount();
+                var lastVisible = linearLayoutManager.findLastVisibleItemPosition();
+                if (totalItemCount <= lastVisible + 30) {
+                    viewModel.loadMore();
                 }
             }
         });
-        queue = NetworkComponent.getRequestQueueInstance(requireContext());
 
-        attemptRefresh();
+        viewModel.getStories().observe(getViewLifecycleOwner(), adapter::submitList);
+        binding.storiesHeaderSearchButton.setOnClickListener(this::onClickSearch);
+
+
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+        });
+        ViewUtils.setUpSwipeRefreshWithStatusBarOffset(swipeRefreshLayout);
+        ViewUtils.requestApplyInsetsWhenAttached(view);
+
+        queue = NetworkComponent.getRequestQueueInstance(requireContext());
 
         StoryUpdate.setStoryUpdatedListener(new StoryUpdate.StoryUpdateListener() {
             @Override
@@ -176,10 +203,37 @@ public class StoriesFragment extends Fragment {
                 }
             }
         });
-        if (getActivity() instanceof MainActivity) {
-            storyClickListener = (MainActivity) getActivity();
+        if (getActivity() instanceof MainActivity mainActivity) {
+            storyClickListener = mainActivity;
         }
+
+        viewModel.isRefreshing().observe(getViewLifecycleOwner(), (isLoading) -> {
+            swipeRefreshLayout.setRefreshing(isLoading);
+        });
+
+        viewModel.getLoadingFailed().observe(getViewLifecycleOwner(), (loadingFailed) -> {
+            if (loadingFailed) {
+                binding.storiesUpdateContainer.setVisibility(View.VISIBLE);
+                binding.storiesUpdateButton.setOnClickListener((v) -> {
+                    viewModel.refreshError();
+                });
+            } else {
+                binding.storiesUpdateContainer.setVisibility(View.GONE);
+            }
+        });
+
     }
+
+    private boolean debounce() {
+        long now = System.currentTimeMillis();
+        if (now - lastClick > CLICK_INTERVAL) {
+            lastClick = now;
+        } else {
+            return true;
+        }
+        return false;
+    }
+
 
     private void handleBackPress() {
         backPressedCallback = new OnBackPressedCallback(false) {
@@ -192,36 +246,7 @@ public class StoriesFragment extends Fragment {
     }
 
     private void onClickSearch(View v) {
-        getParentFragmentManager().setFragmentResultListener("search_query", this, new FragmentResultListener() {
-            @Override
-            public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle bundle) {
-                String result = bundle.getString("query_term");
-                ArrayList<String> tags = bundle.getStringArrayList("tags");
-                String username = bundle.getString("username");
-                StringBuilder tagsStr = new StringBuilder();
-                if (!TextUtils.isEmpty(username)) {
-                    tagsStr.append("author_");
-                    tagsStr.append(username);
-                    tagsStr.append(",");
-                }
-                if (tags != null && !tags.isEmpty()) {
-                    tagsStr.append("(");
-                    for (var searchTag : tags) {
-                        tagsStr.append(searchTag).append(",");
-                    }
-                    tagsStr.append(")");
-                }
-                search(result, tagsStr.toString());
-            }
-        });
-
-        requireActivity().getSupportFragmentManager().beginTransaction().
-                setReorderingAllowed(true).
-                add(R.id.main_fragment_stories_container, SearchFragment.class, null)
-                .addToBackStack("search")
-                .hide(this)
-                .commit();
-
+        requireActivity().getSupportFragmentManager().beginTransaction().setReorderingAllowed(true).replace(R.id.main_fragment_stories_container, SearchFragment.class, null).addToBackStack("search").hide(this).commit();
     }
 
     private void setupHeader() {
@@ -258,7 +283,7 @@ public class StoriesFragment extends Fragment {
 
             }
         });
-        binding.storiesHeaderSpinner.setSelection(getPreferredTypeIndex());
+        binding.storiesHeaderSpinner.setSelection(getPreferredTypeIndex(requireContext()));
         //---------------------------------------------------------------------------------------------//
         // SETUP MORE BUTTON
         binding.storiesHeaderMore.setOnClickListener(this::moreClick);
@@ -269,14 +294,8 @@ public class StoriesFragment extends Fragment {
 
     }
 
-    private int getPreferredTypeIndex() {
-        String[] sortingOptions = getResources().getStringArray(R.array.sorting_options);
-        ArrayList<CharSequence> typeAdapterList = new ArrayList<>(Arrays.asList(sortingOptions));
-        return typeAdapterList.indexOf(SettingsUtils.getPreferredStoryType(getContext()));
-    }
-
     private void setupAdapter() {
-        adapter = new StoryRecyclerViewAdapter(stories, SettingsUtils.shouldShowPoints(getContext()), SettingsUtils.shouldShowCommentsCount(getContext()), SettingsUtils.shouldUseCompactView(getContext()), SettingsUtils.shouldShowThumbnails(getContext()), SettingsUtils.shouldShowIndex(getContext()), SettingsUtils.shouldUseLeftAlign(getContext()), SettingsUtils.getPreferredHotness(getContext()), SettingsUtils.getPreferredFaviconProvider(getContext()), null, getPreferredTypeIndex());
+        adapter = new StoryRecyclerViewAdapter(stories, SettingsUtils.shouldShowPoints(getContext()), SettingsUtils.shouldShowCommentsCount(getContext()), SettingsUtils.shouldUseCompactView(getContext()), SettingsUtils.shouldShowThumbnails(getContext()), SettingsUtils.shouldShowIndex(getContext()), SettingsUtils.shouldUseLeftAlign(getContext()), SettingsUtils.getPreferredHotness(getContext()), SettingsUtils.getPreferredFaviconProvider(getContext()), null, getPreferredTypeIndex(requireContext()));
 
         adapter.setOnLinkClickListener(position -> {
             if (position == RecyclerView.NO_POSITION) {
@@ -383,7 +402,7 @@ public class StoriesFragment extends Fragment {
 
         // if more than 1 hr
         if (timeDiff > 1000 * 60 * 60 && !adapter.searching && adapter.type != SettingsUtils.getBookmarksIndex(getResources()) && !currentTypeIsAlgolia()) {
-            showUpdateButton();
+            //  showUpdateButton();
         }
         binding.getRoot().invalidate();
         if (adapter.showPoints != SettingsUtils.shouldShowPoints(getContext())) {
@@ -483,7 +502,7 @@ public class StoriesFragment extends Fragment {
         }
 
         String url = "https://hacker-news.firebaseio.com/v0/item/" + story.id + ".json";
-
+        Log.d("TAG", "loadStory: id = " + story.id);
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, response -> {
             try {
                 int index = stories.indexOf(story);
@@ -586,13 +605,9 @@ public class StoriesFragment extends Fragment {
 
     public void attemptRefresh() {
         backPressedCallback.setEnabled(false);
-        hideUpdateButton();
-        binding.loadingSpinner.hide();
         binding.storiesHeaderSpinner.setVisibility(View.VISIBLE);
-        binding.searchTitle.setVisibility(View.GONE);
 
-        swipeRefreshLayout.setRefreshing(true);
-
+        // binding.loadingFailedContainer.setVisibility(View.GONE);
         //cancel all ongoing
         queue.cancelAll(requestTag);
 
@@ -635,59 +650,21 @@ public class StoriesFragment extends Fragment {
             }
 
             adapter.notifyItemChanged(0);
-            swipeRefreshLayout.setRefreshing(false);
 
             return;
         }
 
         // if none of the above, do a normal loading
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, hnUrls[adapter.type == 0 ? 0 : adapter.type - 3], response -> {
-            swipeRefreshLayout.setRefreshing(false);
-            try {
-                JSONArray jsonArray = new JSONArray(response);
 
-                loadedTo = -1;
-                var tempSize = stories.size();
-                stories.clear();
-                adapter.notifyItemRangeRemoved(0, tempSize);
-
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    int id = Integer.parseInt(jsonArray.get(i).toString());
-                    if (hideClicked && clickedIds.contains(id)) {
-                        continue;
-                    }
-
-                    Story s = new Story("Loading...", id, false, clickedIds.contains(id));
-                    //let's try to fill this with old information if possible
-
-                    String cachedResponse = Utils.loadCachedStory(getContext(), id);
-                    if (cachedResponse != null && !cachedResponse.equals(JSONParser.ALGOLIA_ERROR_STRING)) {
-                        JSONParser.updateStoryWithAlgoliaResponse(s, cachedResponse);
-                    }
-
-                    stories.add(s);
-                    adapter.notifyItemInserted(i);
-                }
-
-                if (adapter.loadingFailed) {
-                    adapter.loadingFailed = false;
-                    adapter.loadingFailedServerError = false;
-                }
-
-                adapter.notifyItemChanged(0);
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }, error -> {
-            swipeRefreshLayout.setRefreshing(false);
-            adapter.loadingFailed = true;
-            adapter.notifyItemChanged(0);
+        viewModel.updateStoryType(switch (adapter.type) {
+            case 0 -> StoryType.TOP;
+            case 4 -> StoryType.NEW;
+            case 5 -> StoryType.BEST;
+            case 6 -> StoryType.ASK;
+            case 7 -> StoryType.SHOW;
+            case 8 -> StoryType.JOB;
+            default -> null;
         });
-
-        adapter.notifyItemChanged(0);
-        stringRequest.setTag(requestTag);
-        queue.add(stringRequest);
     }
 
     private void loadTopStoriesSince(int start_i) {
@@ -700,10 +677,6 @@ public class StoriesFragment extends Fragment {
             return;
         }
         binding.storiesHeaderSpinner.setVisibility(View.GONE);
-        binding.searchTitle.setVisibility(View.VISIBLE);
-        binding.loadingSpinner.show();
-        String displayQuery = String.format(requireContext().getString(R.string.search_query_display), query);
-        binding.searchTitleQuery.setText(displayQuery);
         backPressedCallback.setEnabled(true);
         StringBuilder url = new StringBuilder("https://hn.algolia.com/api/v1/search_by_date?");
         if (!query.isEmpty()) {
@@ -722,17 +695,15 @@ public class StoriesFragment extends Fragment {
 
     private void loadAlgolia(String url) {
         swipeRefreshLayout.setEnabled(true);
-        swipeRefreshLayout.setRefreshing(true);
         stories.clear();
         adapter.notifyDataSetChanged(); //necessary to avoid crash with RV
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url, response -> {
-            swipeRefreshLayout.setRefreshing(false);
             try {
                 int oldSize = stories.size();
                 adapter.notifyItemRangeRemoved(0, oldSize);
 
                 stories.addAll(JSONParser.algoliaJsonToStories(response));
-                binding.loadingSpinner.hide();
+                //  binding.loadingSpinner.hide();
                 Iterator<Story> iterator = stories.iterator();
                 while (iterator.hasNext()) {
                     Story story = iterator.next();
@@ -759,7 +730,6 @@ public class StoriesFragment extends Fragment {
             }
 
             error.printStackTrace();
-            swipeRefreshLayout.setRefreshing(false);
             adapter.loadingFailed = true;
             adapter.notifyItemChanged(0);
         });
@@ -795,7 +765,7 @@ public class StoriesFragment extends Fragment {
 
             animatorSet.addListener(new AnimatorListenerAdapter() {
                 @Override
-                public void onAnimationEnd(android.animation.Animator animation) {
+                public void onAnimationEnd(Animator animation) {
                     updateContainer.setVisibility(View.GONE);
                     updateContainer.setTranslationY(0);
                     updateContainer.setAlpha(1f);

@@ -8,6 +8,8 @@ import com.simon.harmonichackernews.utils.CommentsUtils;
 import com.simon.harmonichackernews.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class Story {
     public String by;
@@ -37,7 +39,8 @@ public class Story {
     public int commentMasterId;
     public String commentMasterUrl;
 
-    public Story() {}
+    public Story() {
+    }
 
     public Story(String title, int id, boolean loaded, boolean clicked) {
         this.title = title;
@@ -87,4 +90,42 @@ public class Story {
         return arxivInfo != null || repoInfo != null || wikiInfo != null || nitterInfo != null;
     }
 
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Story story)) return false;
+
+        return descendants == story.descendants && id == story.id && score == story.score && time == story.time && loaded == story.loaded && clicked == story.clicked && isLink == story.isLink && isJob == story.isJob && loadingFailed == story.loadingFailed && isComment == story.isComment && parentId == story.parentId && commentMasterId == story.commentMasterId && Objects.equals(by, story.by) && Objects.equals(title, story.title) && Objects.equals(pdfTitle, story.pdfTitle) && Objects.equals(url, story.url) && Arrays.equals(kids, story.kids) && Arrays.equals(pollOptions, story.pollOptions) && Objects.equals(pollOptionArrayList, story.pollOptionArrayList) && Objects.equals(text, story.text) && Objects.equals(repoInfo, story.repoInfo) && Objects.equals(arxivInfo, story.arxivInfo) && Objects.equals(wikiInfo, story.wikiInfo) && Objects.equals(nitterInfo, story.nitterInfo) && Objects.equals(commentMasterTitle, story.commentMasterTitle) && Objects.equals(commentMasterUrl, story.commentMasterUrl);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(by);
+        result = 31 * result + descendants;
+        result = 31 * result + id;
+        result = 31 * result + score;
+        result = 31 * result + time;
+        result = 31 * result + Objects.hashCode(title);
+        result = 31 * result + Objects.hashCode(pdfTitle);
+        result = 31 * result + Objects.hashCode(url);
+        result = 31 * result + Arrays.hashCode(kids);
+        result = 31 * result + Arrays.hashCode(pollOptions);
+        result = 31 * result + Objects.hashCode(pollOptionArrayList);
+        result = 31 * result + Boolean.hashCode(loaded);
+        result = 31 * result + Boolean.hashCode(clicked);
+        result = 31 * result + Objects.hashCode(text);
+        result = 31 * result + Objects.hashCode(repoInfo);
+        result = 31 * result + Objects.hashCode(arxivInfo);
+        result = 31 * result + Objects.hashCode(wikiInfo);
+        result = 31 * result + Objects.hashCode(nitterInfo);
+        result = 31 * result + Boolean.hashCode(isLink);
+        result = 31 * result + Boolean.hashCode(isJob);
+        result = 31 * result + Boolean.hashCode(loadingFailed);
+        result = 31 * result + Boolean.hashCode(isComment);
+        result = 31 * result + parentId;
+        result = 31 * result + Objects.hashCode(commentMasterTitle);
+        result = 31 * result + commentMasterId;
+        result = 31 * result + Objects.hashCode(commentMasterUrl);
+        return result;
+    }
 }

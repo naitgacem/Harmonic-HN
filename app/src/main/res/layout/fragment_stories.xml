@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/MainActivityFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:fitsSystemWindows="true"
     android:transitionGroup="true">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -19,67 +17,43 @@
             android:id="@+id/topBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed"
-            >
+            app:layout_scrollFlags="scroll|enterAlways|enterAlwaysCollapsed">
 
-                <Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    app:contentInsetStartWithNavigation="0dp"
-                    app:layout_insetEdge="top"
-                    android:layout_centerInParent="true"
-                    >
+            <Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center"
+                app:contentInsetStartWithNavigation="0dp"
+                app:layout_insetEdge="top">
 
-                    <androidx.appcompat.widget.AppCompatSpinner
-                        android:id="@+id/stories_header_spinner"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="start"
-                        android:dropDownVerticalOffset="49dp"
-                        android:spinnerMode="dropdown"
-                        android:visibility="visible"/>
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:id="@+id/search_title"
-                        android:visibility="gone">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Search Results"
-                            android:layout_gravity="center_vertical"
-                            android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text=""
-                            android:layout_gravity="center_vertical"
-                            android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
-                            android:maxLines="1"
-                            android:ellipsize="end"
-                            android:id="@+id/search_title_query"
-                            android:layout_marginStart="4dp"/>
-                    </LinearLayout>
-                    <ImageButton
-                        android:id="@+id/stories_header_more"
-                        android:layout_width="48dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/ic_action_more" />
+                <androidx.appcompat.widget.AppCompatSpinner
+                    android:id="@+id/stories_header_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:dropDownVerticalOffset="49dp"
+                    android:spinnerMode="dropdown"
+                    android:visibility="visible" />
 
-                    <ImageButton
-                        android:id="@+id/stories_header_search_button"
-                        android:layout_width="48dp"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:src="@drawable/ic_action_search" />
+                <ImageButton
+                    android:id="@+id/stories_header_more"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_action_more" />
 
-                </Toolbar>
+                <ImageButton
+                    android:id="@+id/stories_header_search_button"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_action_search" />
+
+            </Toolbar>
 
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
@@ -87,13 +61,12 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
+    <FrameLayout
+        android:id="@+id/stories_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:id="@+id/stories_content"
         android:visibility="visible"
-        >
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/stories_swipe_refresh"
@@ -108,21 +81,11 @@
                 android:clipToPadding="false"
                 tools:listitem="@layout/story_list_item" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-    </LinearLayout>
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/loading_spinner_container"
-        android:visibility="visible">
-        <androidx.core.widget.ContentLoadingProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_gravity="center"
-            android:id="@+id/loading_spinner"
-            >
-        </androidx.core.widget.ContentLoadingProgressBar>
+
+
     </FrameLayout>
+
+
     <LinearLayout
         android:id="@+id/stories_update_container"
         android:layout_width="wrap_content"
@@ -133,7 +96,8 @@
         android:elevation="8dp"
         android:foreground="?selectableItemBackgroundBorderless"
         android:paddingLeft="4dp"
-        android:paddingRight="4dp">
+        android:paddingRight="4dp"
+        android:visibility="gone">
 
         <Button
             android:id="@+id/stories_update_button"
@@ -148,5 +112,19 @@
             android:textStyle="bold" />
 
     </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/loading_failed_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/loading_failed_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/loading_failed" />
+    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
