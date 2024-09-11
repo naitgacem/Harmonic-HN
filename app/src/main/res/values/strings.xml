@@ -43,4 +43,6 @@
     <string name="unknown_host">Unknown host</string>
     <string name="story_meta">{0,choice,0# 0 points|1# 1 point|1&lt;{0,number,integer} points}. {1}. {2}</string>
     <string name="dot">•</string>
+    <string name="submission_comment_header">On \"%1$s\" %2$s</string>
+    <string name="search">Search</string>
 </resources>

@@ -44,13 +44,6 @@
             android:text="@string/poll" />
 
         <com.google.android.material.chip.Chip
-            android:id="@+id/poll_opt_chip"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/poll_option" />
-
-        <com.google.android.material.chip.Chip
             android:id="@+id/show_hn_chip"
             style="@style/Widget.Material3.Chip.Filter"
             android:layout_width="wrap_content"
@@ -81,7 +74,6 @@
         android:paddingTop="16dp"
         android:paddingBottom="8dp"
         android:text="Filter by a single username" />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -94,13 +86,12 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight=".6"
-            android:gravity="center_horizontal"
             app:boxCornerRadiusBottomEnd="10dp"
             app:boxCornerRadiusBottomStart="10dp"
             app:boxCornerRadiusTopEnd="10dp"
             app:boxCornerRadiusTopStart="10dp">
 
-            <com.google.android.material.textfield.TextInputEditText
+            <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/username_edit_text"
@@ -109,7 +100,13 @@
 
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
-
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/search"
+        android:id="@+id/search_btn"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"

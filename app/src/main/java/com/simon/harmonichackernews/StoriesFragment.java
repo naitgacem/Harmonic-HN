@@ -187,7 +187,7 @@ public class StoriesFragment extends Fragment {
 
 
         swipeRefreshLayout.setOnRefreshListener(() -> {
-
+            viewModel.refresh();
         });
         ViewUtils.setUpSwipeRefreshWithStatusBarOffset(swipeRefreshLayout);
         ViewUtils.requestApplyInsetsWhenAttached(view);
@@ -618,8 +618,6 @@ public class StoriesFragment extends Fragment {
     public void attemptRefresh() {
         backPressedCallback.setEnabled(false);
         binding.storiesHeaderSpinner.setVisibility(View.VISIBLE);
-
-        // binding.loadingFailedContainer.setVisibility(View.GONE);
         //cancel all ongoing
         queue.cancelAll(requestTag);
 

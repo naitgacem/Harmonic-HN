@@ -108,7 +108,7 @@ class StoriesViewModel @Inject constructor(
         refresh()
     }
 
-    private fun refresh() {
+    fun refresh() {
         loadingStoriesJob?.cancel()
         idList = null
         isRefreshing.value = false

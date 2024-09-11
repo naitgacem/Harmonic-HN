@@ -346,31 +346,22 @@ public class StoryRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.
 
             scrim.setBackground(gradientDrawable);
 
-            bodyText.setOnClickATagListener(new OnClickATagListener() {
-                @Override
-                public boolean onClick(View widget, String spannedText, @Nullable String href) {
-                    Utils.launchCustomTab(widget.getContext(), href);
-                    return true;
+            bodyText.setOnClickATagListener((widget, spannedText, href) -> {
+                Utils.launchCustomTab(widget.getContext(), href);
+                return true;
+            });
+
+            storyButton.setOnClickListener((storyButton) -> {
+                int pos = getAbsoluteAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION) {
+                    commentStoryClickListener.onItemClick(getAbsoluteAdapterPosition());
                 }
             });
 
-            storyButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int pos = getAbsoluteAdapterPosition();
-                    if (pos != RecyclerView.NO_POSITION) {
-                        commentStoryClickListener.onItemClick(getAbsoluteAdapterPosition());
-                    }
-                }
-            });
-
-            repliesButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int pos = getAbsoluteAdapterPosition();
-                    if (pos != RecyclerView.NO_POSITION) {
-                        commentRepliesClickListener.onItemClick(getAbsoluteAdapterPosition());
-                    }
+            repliesButton.setOnClickListener((repliesButton) -> {
+                int pos = getAbsoluteAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION) {
+                    commentRepliesClickListener.onItemClick(getAbsoluteAdapterPosition());
                 }
             });
         }

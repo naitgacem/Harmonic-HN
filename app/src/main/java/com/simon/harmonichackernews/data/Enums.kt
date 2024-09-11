@@ -17,7 +17,6 @@ enum class PostType {
     STORY,
     COMMENT,
     POLL,
-    POLL_OPTION,
     SHOW_HN,
     ASK_HN,
 }

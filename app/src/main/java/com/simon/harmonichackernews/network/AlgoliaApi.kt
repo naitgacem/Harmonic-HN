@@ -25,9 +25,7 @@ class AlgoliaApi @Inject constructor(
     }
 
     private fun generateTags(
-        postTypes: List<PostType>,
-        frontPage: Boolean,
-        author: String?
+        postTypes: List<PostType>, frontPage: Boolean, author: String?
     ): String {
         val tagsStringBuilder = StringBuilder()
         if (postTypes.isNotEmpty()) {
@@ -38,7 +36,6 @@ class AlgoliaApi @Inject constructor(
                         PostType.STORY -> "story"
                         PostType.COMMENT -> "comment"
                         PostType.POLL -> "poll"
-                        PostType.POLL_OPTION -> "pollopt"
                         PostType.SHOW_HN -> "show_hn"
                         PostType.ASK_HN -> "ask_hn"
                     }
