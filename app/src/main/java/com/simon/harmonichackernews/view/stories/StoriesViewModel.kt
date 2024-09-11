@@ -8,6 +8,7 @@ import com.simon.harmonichackernews.data.NetworkResult
 import com.simon.harmonichackernews.data.Story
 import com.simon.harmonichackernews.data.StoryType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,6 +21,7 @@ class StoriesViewModel @Inject constructor(
     val stories = MutableLiveData<List<Story>>(mutableListOf())
     private var page = 0
     private val pageSize = 30
+    private var loadingStoriesJob: Job? = null
     private val fakeData = List(5) { _ ->
         Story("Loading", -1, false, false)
     }
@@ -45,7 +47,7 @@ class StoriesViewModel @Inject constructor(
 
     private fun loadStories() {
         isRefreshing.value = true
-        viewModelScope.launch {
+        loadingStoriesJob = viewModelScope.launch {
             if (idList == null) {
                 loadListId()
             }
@@ -73,8 +75,8 @@ class StoriesViewModel @Inject constructor(
                 fakeData.forEachIndexed { index, story ->
                     story.id = it[minOf(startIndex + index, it.size - 1)]
                 }
-
                 stories.value = oldList + fakeData
+
                 val result = firebaseRepository.getStories(it, page, pageSize)
                 isRefreshing.value = false
                 if (result.any { !it.loaded }) {
@@ -95,7 +97,7 @@ class StoriesViewModel @Inject constructor(
     }
 
     fun refreshError() {
-        synchronized(this){
+        synchronized(this) {
             attempts = 3
         }
         loadMore()
@@ -103,12 +105,17 @@ class StoriesViewModel @Inject constructor(
 
     fun updateStoryType(storyType: StoryType) {
         this.storyType = storyType
+        refresh()
+    }
+
+    private fun refresh() {
+        loadingStoriesJob?.cancel()
         idList = null
         isRefreshing.value = false
         loadingFailed.value = false
         page = 0
         attempts = 3
-        stories.postValue(emptyList())
+        stories.value = emptyList()
         loadMore()
     }
 }

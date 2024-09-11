@@ -24,10 +24,10 @@ import com.simon.harmonichackernews.utils.Utils
 import java.net.URI
 import java.text.MessageFormat
 
-class StoryListAdapter @JvmOverloads constructor(
+class StoryListAdapter(
     context: Context,
     private val onLinkClick: (Story) -> Unit = {},
-    private val onCommentsCLick: (Story) -> Unit = {}
+    private val onCommentsCLick: (Story) -> Unit = {},
 ) : ListAdapter<Story, StoriesViewHolder>(StoryDiff) {
     private val leftAlign = SettingsUtils.shouldUseLeftAlign(context)
     private val showIndex = SettingsUtils.shouldShowIndex(context)

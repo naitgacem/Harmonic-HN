@@ -163,19 +163,31 @@ public class StoriesFragment extends Fragment {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                var totalItemCount = linearLayoutManager.getItemCount();
-                var lastVisible = linearLayoutManager.findLastVisibleItemPosition();
-                if (totalItemCount <= lastVisible + 30) {
-                    viewModel.loadMore();
+                if(dy > 0){
+                    var totalItemCount = linearLayoutManager.getItemCount();
+                    var lastVisible = linearLayoutManager.findLastVisibleItemPosition();
+                    if (totalItemCount <= lastVisible + 30) {
+                        viewModel.loadMore();
+                    }
                 }
             }
         });
 
-        viewModel.getStories().observe(getViewLifecycleOwner(), adapter::submitList);
+        viewModel.getStories().observe(getViewLifecycleOwner(), list -> {
+            // TODO Move the storage of clicked IDs into a database
+            // TODO Handle the clicked state at the data layer
+            for(var story: list){
+                if(clickedIds.contains(story.id)){
+                    story.clicked = true;
+                }
+            }
+            adapter.submitList(list);
+        });
         binding.storiesHeaderSearchButton.setOnClickListener(this::onClickSearch);
 
 
         swipeRefreshLayout.setOnRefreshListener(() -> {
+
         });
         ViewUtils.setUpSwipeRefreshWithStatusBarOffset(swipeRefreshLayout);
         ViewUtils.requestApplyInsetsWhenAttached(view);
