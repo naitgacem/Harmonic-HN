@@ -11,6 +11,7 @@ interface AlgoliaService {
         @Query("tags", encoded = true) tags: String? = null,
         @Query("numericFilters") numericFilters: String? = null,
         @Query("page") page: Int? = null,
+        @Query("typoTolerance") tolerance: String = "min"
     ): ResponseBody
 
     @GET("search_by_date")
@@ -19,5 +20,6 @@ interface AlgoliaService {
         @Query("tags", encoded = true) tags: String? = null,
         @Query("numericFilters") numericFilters: String? = null,
         @Query("page") page: Int? = null,
+        @Query("typoTolerance") tolerance: String = "min"
     ): ResponseBody
 }

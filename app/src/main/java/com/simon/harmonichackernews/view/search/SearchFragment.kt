@@ -10,26 +10,18 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.DividerItemDecoration.*
+import androidx.recyclerview.widget.DividerItemDecoration.VERTICAL
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.transition.MaterialSharedAxis
 import com.simon.harmonichackernews.CommentsActivity
 import com.simon.harmonichackernews.R
 import com.simon.harmonichackernews.StoriesFragment.StoryClickListener
 import com.simon.harmonichackernews.adapters.StoryListAdapter
-import com.simon.harmonichackernews.adapters.StoryRecyclerViewAdapter
 import com.simon.harmonichackernews.data.PostType
+import com.simon.harmonichackernews.data.SortType
 import com.simon.harmonichackernews.data.Story
 import com.simon.harmonichackernews.databinding.FragmentSearchBinding
 import com.simon.harmonichackernews.utils.CommentsUtils
-import com.simon.harmonichackernews.utils.SettingsUtils.getPreferredFaviconProvider
-import com.simon.harmonichackernews.utils.SettingsUtils.getPreferredHotness
-import com.simon.harmonichackernews.utils.SettingsUtils.shouldShowCommentsCount
-import com.simon.harmonichackernews.utils.SettingsUtils.shouldShowIndex
-import com.simon.harmonichackernews.utils.SettingsUtils.shouldShowPoints
-import com.simon.harmonichackernews.utils.SettingsUtils.shouldShowThumbnails
-import com.simon.harmonichackernews.utils.SettingsUtils.shouldUseCompactView
-import com.simon.harmonichackernews.utils.SettingsUtils.shouldUseLeftAlign
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -50,27 +42,16 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.searchView.editText.setOnEditorActionListener { _, _, _ -> search() }
 
-
-        StoryRecyclerViewAdapter(
-            listOf(), shouldShowPoints(
-                context
-            ), shouldShowCommentsCount(context), shouldUseCompactView(
-                context
-            ), shouldShowThumbnails(context), shouldShowIndex(context), shouldUseLeftAlign(
-                context
-            ), getPreferredHotness(context), getPreferredFaviconProvider(
-                context
-            ), null, 0
-        )
         val clickListener: (Story) -> Unit = { story ->
             (requireActivity() as? StoryClickListener)?.openStory(story, 0, false)
         }
-        val storyClickListener:(Story) -> Unit = {story ->
-            val intent = Intent(requireActivity().applicationContext, CommentsActivity::class.java).apply {
-                putExtra(CommentsUtils.EXTRA_ID, story.commentMasterId)
-                putExtra(CommentsUtils.EXTRA_TITLE, story.commentMasterTitle)
-                putExtra(CommentsUtils.EXTRA_URL, story.commentMasterUrl)
-            }
+        val storyClickListener: (Story) -> Unit = { story ->
+            val intent =
+                Intent(requireActivity().applicationContext, CommentsActivity::class.java).apply {
+                    putExtra(CommentsUtils.EXTRA_ID, story.commentMasterId)
+                    putExtra(CommentsUtils.EXTRA_TITLE, story.commentMasterTitle)
+                    putExtra(CommentsUtils.EXTRA_URL, story.commentMasterUrl)
+                }
             startActivity(intent)
         }
         val adapter = StoryListAdapter(
@@ -81,7 +62,7 @@ class SearchFragment : Fragment() {
             onCommentRepliesClick = clickListener,
         )
 
-        with(binding.recyclerView){
+        with(binding.recyclerView) {
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(DividerItemDecoration(requireContext(), VERTICAL))
             this.adapter = adapter
@@ -107,8 +88,17 @@ class SearchFragment : Fragment() {
                     else -> null
                 }
             }
-            viewModel.setPostTypes(types)
+            viewModel.setPostTypes(types.takeUnless { it.isEmpty() } ?: listOf(PostType.STORY))
         }
+        binding.searchSettings.sortTypeToggleGrp.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                when (checkedId) {
+                    R.id.by_relevance_btn -> viewModel.setSortType(SortType.BY_RELEVANCE)
+                    R.id.by_date_btn -> viewModel.setSortType(SortType.BY_DATE)
+                }
+            }
+        }
+
 
         binding.searchSettings.frontPageSwitch.setOnCheckedChangeListener { _, isChecked ->
             viewModel.setFrontPage(isChecked)

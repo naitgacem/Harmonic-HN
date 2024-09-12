@@ -45,4 +45,9 @@
     <string name="dot">•</string>
     <string name="submission_comment_header">On \"%1$s\" %2$s</string>
     <string name="search">Search</string>
+    <string name="post_type_default_is_story">Post type, default is story:</string>
+    <string name="filter_by_a_single_username">Filter by a single username</string>
+    <string name="sort_type">Sort by:</string>
+    <string name="by_relevance">Relevance</string>
+    <string name="by_date">Date</string>
 </resources>

@@ -20,14 +20,14 @@ class SearchViewModel @Inject constructor(
     val searchResults: LiveData<List<Story>> = _searchResults
     private var _loading = MutableLiveData(false);
     val loading: LiveData<Boolean> = _loading
-    private var postTypes: List<PostType> = emptyList()
-    private var sortType = SortType.BY_RELEVANCE
+    private var postTypes = listOf(PostType.STORY)
+    private var sortType = SortType.BY_DATE
     private var isFrontPage = false
     private var author: String? = null
     fun search(query: String){
         _loading.postValue(true)
         viewModelScope.launch {
-            val result = algoliaApi.search(query, postTypes = postTypes, frontPage = isFrontPage, author = author)
+            val result = algoliaApi.search(query, postTypes = postTypes, frontPage = isFrontPage, author = author, sortType = sortType)
             _loading.postValue(false)
             _searchResults.postValue(result)
         }

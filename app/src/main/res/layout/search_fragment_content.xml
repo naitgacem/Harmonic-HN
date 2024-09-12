@@ -9,12 +9,43 @@
     android:padding="8dp"
     android:paddingVertical="8dp">
 
+
+    <TextView
+        android:id="@+id/sort_type_header"
+        style="@style/TextAppearance.Material3.BodyMedium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sort_type" />
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/sort_type_toggle_grp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <Button
+            android:id="@+id/by_date_btn"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/by_date" />
+
+        <Button
+            android:id="@+id/by_relevance_btn"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/by_relevance" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
     <TextView
         android:id="@+id/post_type_header"
         style="@style/TextAppearance.Material3.BodyMedium"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Post type, default is story:" />
+        android:text="@string/post_type_default_is_story" />
 
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/post_type_chip_group"
@@ -73,7 +104,8 @@
         android:paddingHorizontal="32dp"
         android:paddingTop="16dp"
         android:paddingBottom="8dp"
-        android:text="Filter by a single username" />
+        android:text="@string/filter_by_a_single_username" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -92,21 +124,23 @@
             app:boxCornerRadiusTopStart="10dp">
 
             <EditText
+                android:id="@+id/username_edit_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/username_edit_text"
+                android:autofillHints="name"
                 android:hint="@string/username"
                 android:inputType="text" />
 
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
+
     <Button
+        android:id="@+id/search_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/search"
-        android:id="@+id/search_btn"
         android:layout_gravity="center"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp"
+        android:text="@string/search" />
 
     <LinearLayout
         android:layout_width="match_parent"
